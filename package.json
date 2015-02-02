@@ -1,0 +1,2346 @@
+{
+    "name": "axon",
+    "title": "Axon - Wikipedia & Wordnik client",
+    "id": "jid1-pBCQ3G0mXLBZMw",
+    "description": "Double-click on a word to show the Wordnik dictionary definition.\nIf the selected word or name is not found in the dictionary Axon continues on Wikipedia.\nTo search Wikipedia immediately, hold down Ctrl and double-click on a word.",
+    "author": "Ivo van Kamp",
+    "license": "GPL 3",
+    "version": "0.1",
+    "icon": "./data/Images/icon-64.png",
+    "preferences": [{
+        "name"       : "mainWikipediaLanguageCode",
+        "type"       : "menulist",
+        "title"      : "Main Wikipedia website",
+        "description": "Wiki to use when a word is not found in the dictionary",
+        "value"      : "en",
+        "options": [
+            {
+                "value": "en",
+                "label": "en - English - English"
+            },
+            {
+                "value": "sv",
+                "label": "sv - Swedish - Svenska"
+            },
+            {
+                "value": "nl",
+                "label": "nl - Dutch - Nederlands"
+            },
+            {
+                "value": "de",
+                "label": "de - German - Deutsch"
+            },
+            {
+                "value": "fr",
+                "label": "fr - French - Français"
+            },
+            {
+                "value": "war",
+                "label": "war - Waray-Waray - Winaray"
+            },
+            {
+                "value": "ceb",
+                "label": "ceb - Cebuano - Sinugboanong Binisaya"
+            },
+            {
+                "value": "ru",
+                "label": "ru - Russian - Русский"
+            },
+            {
+                "value": "it",
+                "label": "it - Italian - Italiano"
+            },
+            {
+                "value": "es",
+                "label": "es - Spanish - Español"
+            },
+            {
+                "value": "vi",
+                "label": "vi - Vietnamese - Tiếng Việt"
+            },
+            {
+                "value": "pl",
+                "label": "pl - Polish - Polski"
+            },
+            {
+                "value": "ja",
+                "label": "ja - Japanese - 日本語"
+            },
+            {
+                "value": "pt",
+                "label": "pt - Portuguese - Português"
+            },
+            {
+                "value": "zh",
+                "label": "zh - Chinese - 中文"
+            },
+            {
+                "value": "uk",
+                "label": "uk - Ukrainian - Українська"
+            },
+            {
+                "value": "ca",
+                "label": "ca - Catalan - Català"
+            },
+            {
+                "value": "fa",
+                "label": "fa - Persian - فارسی"
+            },
+            {
+                "value": "no",
+                "label": "no - Norwegian (Bokmål) - Norsk (Bokmål)"
+            },
+            {
+                "value": "fi",
+                "label": "fi - Finnish - Suomi"
+            },
+            {
+                "value": "id",
+                "label": "id - Indonesian - Bahasa Indonesia"
+            },
+            {
+                "value": "ar",
+                "label": "ar - Arabic - العربية"
+            },
+            {
+                "value": "sr",
+                "label": "sr - Serbian - Српски / Srpski"
+            },
+            {
+                "value": "cs",
+                "label": "cs - Czech - Čeština"
+            },
+            {
+                "value": "ko",
+                "label": "ko - Korean - 한국어"
+            },
+            {
+                "value": "hu",
+                "label": "hu - Hungarian - Magyar"
+            },
+            {
+                "value": "sh",
+                "label": "sh - Serbo-Croatian - Srpskohrvatski / Српскохрватски"
+            },
+            {
+                "value": "ms",
+                "label": "ms - Malay - Bahasa Melayu"
+            },
+            {
+                "value": "ro",
+                "label": "ro - Romanian - Română"
+            },
+            {
+                "value": "tr",
+                "label": "tr - Turkish - Türkçe"
+            },
+            {
+                "value": "min",
+                "label": "min - Minangkabau - Minangkabau"
+            },
+            {
+                "value": "kk",
+                "label": "kk - Kazakh - Қазақша"
+            },
+            {
+                "value": "eo",
+                "label": "eo - Esperanto - Esperanto"
+            },
+            {
+                "value": "eu",
+                "label": "eu - Basque - Euskara"
+            },
+            {
+                "value": "sk",
+                "label": "sk - Slovak - Slovenčina"
+            },
+            {
+                "value": "da",
+                "label": "da - Danish - Dansk"
+            },
+            {
+                "value": "bg",
+                "label": "bg - Bulgarian - Български"
+            },
+            {
+                "value": "lt",
+                "label": "lt - Lithuanian - Lietuvių"
+            },
+            {
+                "value": "he",
+                "label": "he - Hebrew - עברית"
+            },
+            {
+                "value": "hr",
+                "label": "hr - Croatian - Hrvatski"
+            },
+            {
+                "value": "hy",
+                "label": "hy - Armenian - Հայերեն"
+            },
+            {
+                "value": "sl",
+                "label": "sl - Slovenian - Slovenščina"
+            },
+            {
+                "value": "et",
+                "label": "et - Estonian - Eesti"
+            },
+            {
+                "value": "uz",
+                "label": "uz - Uzbek - O‘zbek"
+            },
+            {
+                "value":" simple ",
+                "label": "simple  - Simple English - Simple English"
+            },
+            {
+                "value": "gl",
+                "label": "gl - Galician - Galego"
+            },
+            {
+                "value": "vo",
+                "label": "vo - Volapük - Volapük"
+            },
+            {
+                "value": "nn",
+                "label": "nn - Norwegian (Nynorsk) - Nynorsk"
+            },
+            {
+                "value": "hi",
+                "label": "hi - Hindi - हिन्दी"
+            },
+            {
+                "value": "el",
+                "label": "el - Greek - Ελληνικά"
+            },
+            {
+                "value": "la",
+                "label": "la - Latin - Latina"
+            },
+            {
+                "value": "az",
+                "label": "az - Azerbaijani - Azərbaycanca"
+            },
+            {
+                "value": "th",
+                "label": "th - Thai - ไทย"
+            },
+            {
+                "value": "ka",
+                "label": "ka - Georgian - ქართული"
+            },
+            {
+                "value": "oc",
+                "label": "oc - Occitan - Occitan"
+            },
+            {
+                "value": "mk",
+                "label": "mk - Macedonian - Македонски"
+            },
+            {
+                "value": "be",
+                "label": "be - Belarusian - Беларуская"
+            },
+            {
+                "value": "ce",
+                "label": "ce - Chechen - Нохчийн"
+            },
+            {
+                "value": "mg",
+                "label": "mg - Malagasy - Malagasy"
+            },
+            {
+                "value": "new",
+                "label": "new - Newar / Nepal Bhasa - नेपाल भाषा"
+            },
+            {
+                "value": "ta",
+                "label": "ta - Tamil - தமிழ்"
+            },
+            {
+                "value": "tt",
+                "label": "tt - Tatar - Tatarça / Татарча"
+            },
+            {
+                "value": "ur",
+                "label": "ur - Urdu - اردو"
+            },
+            {
+                "value": "pms",
+                "label": "pms - Piedmontese - Piemontèis"
+            },
+            {
+                "value": "tl",
+                "label": "tl - Tagalog - Tagalog"
+            },
+            {
+                "value": "cy",
+                "label": "cy - Welsh - Cymraeg"
+            },
+            {
+                "value": "te",
+                "label": "te - Telugu - తెలుగు"
+            },
+            {
+                "value": "lv",
+                "label": "lv - Latvian - Latviešu"
+            },
+            {
+                "value": "bs",
+                "label": "bs - Bosnian - Bosanski"
+            },
+            {
+                "value":" be-x-old ",
+                "label": "Belarold  - usian (Taraškievica) - Беларуская (тарашкевіца)"
+            },
+            {
+                "value": "ht",
+                "label": "ht - Haitian - Krèyol ayisyen"
+            },
+            {
+                "value": "br",
+                "label": "br - Breton - Brezhoneg"
+            },
+            {
+                "value": "sq",
+                "label": "sq - Albanian - Shqip"
+            },
+            {
+                "value": "jv",
+                "label": "jv - Javanese - Basa Jawa"
+            },
+            {
+                "value": "lb",
+                "label": "lb - Luxembourgish - Lëtzebuergesch"
+            },
+            {
+                "value": "mr",
+                "label": "mr - Marathi - मराठी"
+            },
+            {
+                "value": "is",
+                "label": "is - Icelandic - Íslenska"
+            },
+            {
+                "value": "ml",
+                "label": "ml - Malayalam - മലയാളം"
+            },
+            {
+                "value":" zh-yue ",
+                "label": "Canyue  - tonese - 粵語"
+            },
+            {
+                "value": "af",
+                "label": "af - Afrikaans - Afrikaans"
+            },
+            {
+                "value": "bn",
+                "label": "bn - Bengali - বাংলা"
+            },
+            {
+                "value": "ba",
+                "label": "ba - Bashkir - Башҡорт"
+            },
+            {
+                "value": "pnb",
+                "label": "pnb - Western Panjabi - شاہ مکھی پنجابی (Shāhmukhī Pañjābī)"
+            },
+            {
+                "value": "ga",
+                "label": "ga - Irish - Gaeilge"
+            },
+            {
+                "value": "my",
+                "label": "my - Burmese - မြန်မာဘာသာ"
+            },
+            {
+                "value": "lmo",
+                "label": "lmo - Lombard - Lumbaart"
+            },
+            {
+                "value": "fy",
+                "label": "fy - West Frisian - Frysk"
+            },
+            {
+                "value": "yo",
+                "label": "yo - Yoruba - Yorùbá"
+            },
+            {
+                "value": "tg",
+                "label": "tg - Tajik - Тоҷикӣ"
+            },
+            {
+                "value": "an",
+                "label": "an - Aragonese - Aragonés"
+            },
+            {
+                "value": "cv",
+                "label": "cv - Chuvash - Чăваш"
+            },
+            {
+                "value": "sco",
+                "label": "sco - Scots - Scots"
+            },
+            {
+                "value": "sw",
+                "label": "sw - Swahili - Kiswahili"
+            },
+            {
+                "value": "ky",
+                "label": "ky - Kirghiz - Кыргызча"
+            },
+            {
+                "value": "ne",
+                "label": "ne - Nepali - नेपाली"
+            },
+            {
+                "value": "io",
+                "label": "io - Ido - Ido"
+            },
+            {
+                "value": "gu",
+                "label": "gu - Gujarati - ગુજરાતી"
+            },
+            {
+                "value": "bpy",
+                "label": "bpy - Bishnupriya Manipuri - ইমার ঠার/বিষ্ণুপ্রিয়া মণিপুরী"
+            },
+            {
+                "value": "scn",
+                "label": "scn - Sicilian - Sicilianu"
+            },
+            {
+                "value": "nds",
+                "label": "nds - Low Saxon - Plattdüütsch"
+            },
+            {
+                "value": "ku",
+                "label": "ku - Kurdish - Kurdî / كوردی"
+            },
+            {
+                "value": "ast",
+                "label": "ast - Asturian - Asturianu"
+            },
+            {
+                "value": "qu",
+                "label": "qu - Quechua - Runa Simi"
+            },
+            {
+                "value": "gd",
+                "label": "gd - Scottish Gaelic - Gàidhlig"
+            },
+            {
+                "value": "als",
+                "label": "als - Alemannic - Alemannisch"
+            },
+            {
+                "value": "su",
+                "label": "su - Sundanese - Basa Sunda"
+            },
+            {
+                "value": "kn",
+                "label": "kn - Kannada - ಕನ್ನಡ"
+            },
+            {
+                "value": "pa",
+                "label": "pa - Punjabi - ਪੰਜਾਬੀ"
+            },
+            {
+                "value": "am",
+                "label": "am - Amharic - አማርኛ"
+            },
+            {
+                "value": "ckb",
+                "label": "ckb - Sorani - Soranî / کوردی"
+            },
+            {
+                "value": "ia",
+                "label": "ia - Interlingua - Interlingua"
+            },
+            {
+                "value": "nap",
+                "label": "nap - Neapolitan - Nnapulitano"
+            },
+            {
+                "value": "bug",
+                "label": "bug - Buginese - Basa Ugi"
+            },
+            {
+                "value": "mn",
+                "label": "mn - Mongolian - Монгол"
+            },
+            {
+                "value":" bat-smg ",
+                "label": "Samosmg  - gitian - Žemaitėška"
+            },
+            {
+                "value": "wa",
+                "label": "wa - Walloon - Walon"
+            },
+            {
+                "value": "arz",
+                "label": "arz - Egyptian Arabic - مصرى (Maṣri)"
+            },
+            {
+                "value":" map-bms ",
+                "label": "Banybms  - umasan - Basa Banyumasan"
+            },
+            {
+                "value":" zh-min-nan ",
+                "label": "Min Nannan  -  - Bân-lâm-gú"
+            },
+            {
+                "value": "si",
+                "label": "si - Sinhalese - සිංහල"
+            },
+            {
+                "value": "mzn",
+                "label": "mzn - Mazandarani - مَزِروني"
+            },
+            {
+                "value": "yi",
+                "label": "yi - Yiddish - ייִדיש"
+            },
+            {
+                "value": "fo",
+                "label": "fo - Faroese - Føroyskt"
+            },
+            {
+                "value": "sah",
+                "label": "sah - Sakha - Саха тыла (Saxa Tyla)"
+            },
+            {
+                "value": "sa",
+                "label": "sa - Sanskrit - संस्कृतम्"
+            },
+            {
+                "value": "bar",
+                "label": "bar - Bavarian - Boarisch"
+            },
+            {
+                "value": "vec",
+                "label": "vec - Venetian - Vèneto"
+            },
+            {
+                "value": "nah",
+                "label": "nah - Nahuatl - Nāhuatl"
+            },
+            {
+                "value": "os",
+                "label": "os - Ossetian - Иронау"
+            },
+            {
+                "value":" roa-tara ",
+                "label": "Taratara  - ntino - Tarandíne"
+            },
+            {
+                "value": "hsb",
+                "label": "hsb - Upper Sorbian - Hornjoserbsce"
+            },
+            {
+                "value": "li",
+                "label": "li - Limburgish - Limburgs"
+            },
+            {
+                "value": "or",
+                "label": "or - Oriya - ଓଡ଼ିଆ"
+            },
+            {
+                "value": "pam",
+                "label": "pam - Kapampangan - Kapampangan"
+            },
+            {
+                "value": "se",
+                "label": "se - Northern Sami - Sámegiella"
+            },
+            {
+                "value": "ilo",
+                "label": "ilo - Ilokano - Ilokano"
+            },
+            {
+                "value": "mrj",
+                "label": "mrj - Hill Mari - Кырык Мары (Kyryk Mary)"
+            },
+            {
+                "value": "mi",
+                "label": "mi - Maori - Māori"
+            },
+            {
+                "value": "co",
+                "label": "co - Corsican - Corsu"
+            },
+            {
+                "value": "mhr",
+                "label": "mhr - Meadow Mari - Олык Марий (Olyk Marij)"
+            },
+            {
+                "value": "hif",
+                "label": "hif - Fiji Hindi - Fiji Hindi"
+            },
+            {
+                "value": "bcl",
+                "label": "bcl - Central Bicolano - Bikol"
+            },
+            {
+                "value": "gan",
+                "label": "gan - Gan - 贛語"
+            },
+            {
+                "value": "frr",
+                "label": "frr - North Frisian - Nordfriisk"
+            },
+            {
+                "value": "bh",
+                "label": "bh - Bihari - भोजपुरी"
+            },
+            {
+                "value": "bo",
+                "label": "bo - Tibetan - བོད་སྐད"
+            },
+            {
+                "value": "rue",
+                "label": "rue - Rusyn - Русиньскый"
+            },
+            {
+                "value": "glk",
+                "label": "glk - Gilaki - گیلکی"
+            },
+            {
+                "value":" nds-nl ",
+                "label": "Dutcnl  - h Low Saxon - Nedersaksisch"
+            },
+            {
+                "value":" fiu-vro ",
+                "label": "Võrovro  -  - Võro"
+            },
+            {
+                "value": "vls",
+                "label": "vls - West Flemish - West-Vlams"
+            },
+            {
+                "value": "ps",
+                "label": "ps - Pashto - پښتو"
+            },
+            {
+                "value": "tk",
+                "label": "tk - Turkmen - تركمن / Туркмен"
+            },
+            {
+                "value": "pag",
+                "label": "pag - Pangasinan - Pangasinan"
+            },
+            {
+                "value": "diq",
+                "label": "diq - Zazaki - Zazaki"
+            },
+            {
+                "value": "xmf",
+                "label": "xmf - Mingrelian - მარგალური (Margaluri)"
+            },
+            {
+                "value": "gv",
+                "label": "gv - Manx - Gaelg"
+            },
+            {
+                "value": "sc",
+                "label": "sc - Sardinian - Sardu"
+            },
+            {
+                "value": "km",
+                "label": "km - Khmer - ភាសាខ្មែរ"
+            },
+            {
+                "value": "hak",
+                "label": "hak - Hakka - Hak-kâ-fa / 客家話"
+            },
+            {
+                "value": "csb",
+                "label": "csb - Kashubian - Kaszëbsczi"
+            },
+            {
+                "value": "kv",
+                "label": "kv - Komi - Коми"
+            },
+            {
+                "value": "zea",
+                "label": "zea - Zeelandic - Zeêuws"
+            },
+            {
+                "value": "crh",
+                "label": "crh - Crimean Tatar - Qırımtatarca"
+            },
+            {
+                "value": "vep",
+                "label": "vep - Vepsian - Vepsän"
+            },
+            {
+                "value":" zh-classical ",
+                "label": "Claclassical  - ssical Chinese - 古文 / 文言文"
+            },
+            {
+                "value": "ay",
+                "label": "ay - Aymara - Aymar"
+            },
+            {
+                "value": "so",
+                "label": "so - Somali - Soomaali"
+            },
+            {
+                "value": "dv",
+                "label": "dv - Divehi - ދިވެހިބަސް"
+            },
+            {
+                "value": "udm",
+                "label": "udm - Udmurt - Удмурт кыл"
+            },
+            {
+                "value": "kw",
+                "label": "kw - Cornish - Kernewek/Karnuack"
+            },
+            {
+                "value": "nrm",
+                "label": "nrm - Norman - Nouormand/Normaund"
+            },
+            {
+                "value": "rm",
+                "label": "rm - Romansh - Rumantsch"
+            },
+            {
+                "value": "wuu",
+                "label": "wuu - Wu - 吴语"
+            },
+            {
+                "value": "eml",
+                "label": "eml - Emilian-Romagnol - Emiliàn e rumagnòl"
+            },
+            {
+                "value": "koi",
+                "label": "koi - Komi-Permyak - Перем Коми (Perem Komi)"
+            },
+            {
+                "value": "ug",
+                "label": "ug - Uyghur - ئۇيغۇر تىلى"
+            },
+            {
+                "value": "stq",
+                "label": "stq - Saterland Frisian - Seeltersk"
+            },
+            {
+                "value": "lad",
+                "label": "lad - Ladino - Dzhudezmo"
+            },
+            {
+                "value": "lij",
+                "label": "lij - Ligurian - Líguru"
+            },
+            {
+                "value": "fur",
+                "label": "fur - Friulian - Furlan"
+            },
+            {
+                "value": "szl",
+                "label": "szl - Silesian - Ślůnski"
+            },
+            {
+                "value": "mt",
+                "label": "mt - Maltese - Malti"
+            },
+            {
+                "value": "as",
+                "label": "as - Assamese - অসমীয়া"
+            },
+            {
+                "value":" cbk-zam ",
+                "label": "Zambzam  - oanga Chavacano - Chavacano de Zamboanga"
+            },
+            {
+                "value": "gn",
+                "label": "gn - Guarani - Avañe'ẽ"
+            },
+            {
+                "value": "pcd",
+                "label": "pcd - Picard - Picard"
+            },
+            {
+                "value": "pi",
+                "label": "pi - Pali - पाऴि"
+            },
+            {
+                "value": "gag",
+                "label": "gag - Gagauz - Gagauz"
+            },
+            {
+                "value": "ksh",
+                "label": "ksh - Ripuarian - Ripoarisch"
+            },
+            {
+                "value": "ie",
+                "label": "ie - Interlingue - Interlingue"
+            },
+            {
+                "value": "ang",
+                "label": "ang - Anglo-Saxon - Englisc"
+            },
+            {
+                "value": "dsb",
+                "label": "dsb - Lower Sorbian - Dolnoserbski"
+            },
+            {
+                "value": "ace",
+                "label": "ace - Acehnese - Bahsa Acèh"
+            },
+            {
+                "value": "ext",
+                "label": "ext - Extremaduran - Estremeñu"
+            },
+            {
+                "value": "nv",
+                "label": "nv - Navajo - Diné bizaad"
+            },
+            {
+                "value": "frp",
+                "label": "frp - Franco-Provençal/Arpitan - Arpitan"
+            },
+            {
+                "value": "kab",
+                "label": "kab - Kabyle - Taqbaylit"
+            },
+            {
+                "value": "sn",
+                "label": "sn - Shona - chiShona"
+            },
+            {
+                "value": "mwl",
+                "label": "mwl - Mirandese - Mirandés"
+            },
+            {
+                "value": "lez",
+                "label": "lez - Lezgian - Лезги чІал (Lezgi č’al)"
+            },
+            {
+                "value": "ln",
+                "label": "ln - Lingala - Lingala"
+            },
+            {
+                "value": "cdo",
+                "label": "cdo - Min Dong - Mìng-dĕ̤ng-ngṳ̄"
+            },
+            {
+                "value": "pfl",
+                "label": "pfl - Palatinate German - Pälzisch"
+            },
+            {
+                "value": "krc",
+                "label": "krc - Karachay-Balkar - Къарачай-Малкъар (Qarachay-Malqar)"
+            },
+            {
+                "value": "haw",
+                "label": "haw - Hawaiian - Hawai`i"
+            },
+            {
+                "value": "pdc",
+                "label": "pdc - Pennsylvania German - Deitsch"
+            },
+            {
+                "value": "xal",
+                "label": "xal - Kalmyk - Хальмг"
+            },
+            {
+                "value": "myv",
+                "label": "myv - Erzya - Эрзянь (Erzjanj Kelj)"
+            },
+            {
+                "value": "rw",
+                "label": "rw - Kinyarwanda - Ikinyarwanda"
+            },
+            {
+                "value": "nov",
+                "label": "nov - Novial - Novial"
+            },
+            {
+                "value": "kaa",
+                "label": "kaa - Karakalpak - Qaraqalpaqsha"
+            },
+            {
+                "value": "to",
+                "label": "to - Tongan - faka Tonga"
+            },
+            {
+                "value": "kl",
+                "label": "kl - Greenlandic - Kalaallisut"
+            },
+            {
+                "value": "arc",
+                "label": "arc - Aramaic - ܐܪܡܝܐ"
+            },
+            {
+                "value": "bjn",
+                "label": "bjn - Banjar - Bahasa Banjar"
+            },
+            {
+                "value": "lo",
+                "label": "lo - Lao - ລາວ"
+            },
+            {
+                "value": "kbd",
+                "label": "kbd - Kabardian Circassian - Адыгэбзэ (Adighabze)"
+            },
+            {
+                "value": "ha",
+                "label": "ha - Hausa - هَوُسَ"
+            },
+            {
+                "value": "pap",
+                "label": "pap - Papiamentu - Papiamentu"
+            },
+            {
+                "value": "av",
+                "label": "av - Avar - Авар"
+            },
+            {
+                "value": "ty",
+                "label": "ty - Tahitian - Reo Mā`ohi"
+            },
+            {
+                "value": "tpi",
+                "label": "tpi - Tok Pisin - Tok Pisin"
+            },
+            {
+                "value": "bxr",
+                "label": "bxr - Buryat (Russia) - Буряад"
+            },
+            {
+                "value": "na",
+                "label": "na - Nauruan - dorerin Naoero"
+            },
+            {
+                "value": "mdf",
+                "label": "mdf - Moksha - Мокшень (Mokshanj Kälj)"
+            },
+            {
+                "value": "lbe",
+                "label": "lbe - Lak - Лакку"
+            },
+            {
+                "value": "jbo",
+                "label": "jbo - Lojban - Lojban"
+            },
+            {
+                "value": "wo",
+                "label": "wo - Wolof - Wolof"
+            },
+            {
+                "value":" roa-rup ",
+                "label": "Aromrup  - anian - Armãneashce"
+            },
+            {
+                "value": "srn",
+                "label": "srn - Sranan - Sranantongo"
+            },
+            {
+                "value": "ig",
+                "label": "ig - Igbo - Igbo"
+            },
+            {
+                "value": "tet",
+                "label": "tet - Tetum - Tetun"
+            },
+            {
+                "value": "nso",
+                "label": "nso - Northern Sotho - Sepedi"
+            },
+            {
+                "value": "tyv",
+                "label": "tyv - Tuvan - Тыва"
+            },
+            {
+                "value": "kg",
+                "label": "kg - Kongo - KiKongo"
+            },
+            {
+                "value": "ab",
+                "label": "ab - Abkhazian - Аҧсуа"
+            },
+            {
+                "value": "sd",
+                "label": "sd - Sindhi - سنڌي، سندھی ، सिन्ध"
+            },
+            {
+                "value": "ltg",
+                "label": "ltg - Latgalian - Latgaļu"
+            },
+            {
+                "value": "zu",
+                "label": "zu - Zulu - isiZulu"
+            },
+            {
+                "value": "za",
+                "label": "za - Zhuang - Cuengh"
+            },
+            {
+                "value": "om",
+                "label": "om - Oromo - Oromoo"
+            },
+            {
+                "value": "tw",
+                "label": "tw - Twi - Twi"
+            },
+            {
+                "value": "chy",
+                "label": "chy - Cheyenne - Tsetsêhestâhese"
+            },
+            {
+                "value": "mai",
+                "label": "mai - Maithili - मैथिली"
+            },
+            {
+                "value": "rmy",
+                "label": "rmy - Romani - romani - रोमानी"
+            },
+            {
+                "value": "cu",
+                "label": "cu - Old Church Slavonic - Словѣньскъ"
+            },
+            {
+                "value": "chr",
+                "label": "chr - Cherokee - ᏣᎳᎩ"
+            },
+            {
+                "value": "tn",
+                "label": "tn - Tswana - Setswana"
+            },
+            {
+                "value": "got",
+                "label": "got - Gothic - 𐌲𐌿𐍄𐌹𐍃𐌺"
+            },
+            {
+                "value": "bi",
+                "label": "bi - Bislama - Bislama"
+            },
+            {
+                "value": "pih",
+                "label": "pih - Norfolk - Norfuk"
+            },
+            {
+                "value": "rn",
+                "label": "rn - Kirundi - Kirundi"
+            },
+            {
+                "value": "sm",
+                "label": "sm - Samoan - Gagana Samoa"
+            },
+            {
+                "value": "bm",
+                "label": "bm - Bambara - Bamanankan"
+            },
+            {
+                "value": "ss",
+                "label": "ss - Swati - SiSwati"
+            },
+            {
+                "value": "mo",
+                "label": "mo - Moldovan - Молдовеняскэ"
+            },
+            {
+                "value": "iu",
+                "label": "iu - Inuktitut - ᐃᓄᒃᑎᑐᑦ"
+            },
+            {
+                "value": "xh",
+                "label": "xh - Xhosa - isiXhosa"
+            },
+            {
+                "value": "ki",
+                "label": "ki - Kikuyu - Gĩkũyũ"
+            },
+            {
+                "value": "pnt",
+                "label": "pnt - Pontic - Ποντιακά"
+            },
+            {
+                "value": "lg",
+                "label": "lg - Luganda - Luganda"
+            },
+            {
+                "value": "ts",
+                "label": "ts - Tsonga - Xitsonga"
+            },
+            {
+                "value": "ee",
+                "label": "ee - Ewe - Eʋegbe"
+            },
+            {
+                "value": "ak",
+                "label": "ak - Akan - Akana"
+            },
+            {
+                "value": "ti",
+                "label": "ti - Tigrinya - ትግርኛ"
+            },
+            {
+                "value": "fj",
+                "label": "fj - Fijian - Na Vosa Vakaviti"
+            },
+            {
+                "value": "ks",
+                "label": "ks - Kashmiri - कश्मीरी / كشميري"
+            },
+            {
+                "value": "sg",
+                "label": "sg - Sango - Sängö"
+            },
+            {
+                "value": "ff",
+                "label": "ff - Fula - Fulfulde"
+            },
+            {
+                "value": "ny",
+                "label": "ny - Chichewa - Chichewa"
+            },
+            {
+                "value": "ve",
+                "label": "ve - Venda - Tshivenda"
+            },
+            {
+                "value": "st",
+                "label": "st - Sesotho - Sesotho"
+            },
+            {
+                "value": "ch",
+                "label": "ch - Chamorro - Chamoru"
+            },
+            {
+                "value": "cr",
+                "label": "cr - Cree - Nehiyaw"
+            },
+            {
+                "value": "dz",
+                "label": "dz - Dzongkha - ཇོང་ཁ"
+            },
+            {
+                "value": "ik",
+                "label": "ik - Inupiak - Iñupiak"
+            },
+            {
+                "value": "tum",
+                "label": "tum - Tumbuka - chiTumbuka"
+            },
+            {
+                "value": "ng",
+                "label": "ng - Ndonga - Oshiwambo"
+            },
+            {
+                "value": "ii",
+                "label": "ii - Sichuan Yi - ꆇꉙ"
+            },
+            {
+                "value": "cho",
+                "label": "cho - Choctaw - Choctaw"
+            },
+            {
+                "value": "mh",
+                "label": "mh - Marshallese - Ebon"
+            },
+            {
+                "value": "aa",
+                "label": "aa - Afar - Afar"
+            },
+            {
+                "value": "kj",
+                "label": "kj - Kuanyama - Kuanyama"
+            },
+            {
+                "value": "ho",
+                "label": "ho - Hiri Motu - Hiri Motu"
+            },
+            {
+                "value": "mus",
+                "label": "mus - Muscogee - Muskogee"
+            },
+            {
+                "value": "kr",
+                "label": "kr - Kanuri - Kanuri"
+            },
+            {
+                "value": "hz",
+                "label": "hz - Herero - Otsiherero"
+            }
+        ]
+    },
+    {
+        "name"       : "immediateLookupWikipediaLanguageCode",
+        "type"       : "menulist",
+        "title"      : "Immediate lookup Wikipedia website",
+        "description": "Wiki to use when holding Ctrl and double-clicking",
+        "value"      : "en",
+        "options": [
+            {
+                "value": "en",
+                "label": "en - English - English"
+            },
+            {
+                "value": "sv",
+                "label": "sv - Swedish - Svenska"
+            },
+            {
+                "value": "nl",
+                "label": "nl - Dutch - Nederlands"
+            },
+            {
+                "value": "de",
+                "label": "de - German - Deutsch"
+            },
+            {
+                "value": "fr",
+                "label": "fr - French - Français"
+            },
+            {
+                "value": "war",
+                "label": "war - Waray-Waray - Winaray"
+            },
+            {
+                "value": "ceb",
+                "label": "ceb - Cebuano - Sinugboanong Binisaya"
+            },
+            {
+                "value": "ru",
+                "label": "ru - Russian - Русский"
+            },
+            {
+                "value": "it",
+                "label": "it - Italian - Italiano"
+            },
+            {
+                "value": "es",
+                "label": "es - Spanish - Español"
+            },
+            {
+                "value": "vi",
+                "label": "vi - Vietnamese - Tiếng Việt"
+            },
+            {
+                "value": "pl",
+                "label": "pl - Polish - Polski"
+            },
+            {
+                "value": "ja",
+                "label": "ja - Japanese - 日本語"
+            },
+            {
+                "value": "pt",
+                "label": "pt - Portuguese - Português"
+            },
+            {
+                "value": "zh",
+                "label": "zh - Chinese - 中文"
+            },
+            {
+                "value": "uk",
+                "label": "uk - Ukrainian - Українська"
+            },
+            {
+                "value": "ca",
+                "label": "ca - Catalan - Català"
+            },
+            {
+                "value": "fa",
+                "label": "fa - Persian - فارسی"
+            },
+            {
+                "value": "no",
+                "label": "no - Norwegian (Bokmål) - Norsk (Bokmål)"
+            },
+            {
+                "value": "fi",
+                "label": "fi - Finnish - Suomi"
+            },
+            {
+                "value": "id",
+                "label": "id - Indonesian - Bahasa Indonesia"
+            },
+            {
+                "value": "ar",
+                "label": "ar - Arabic - العربية"
+            },
+            {
+                "value": "sr",
+                "label": "sr - Serbian - Српски / Srpski"
+            },
+            {
+                "value": "cs",
+                "label": "cs - Czech - Čeština"
+            },
+            {
+                "value": "ko",
+                "label": "ko - Korean - 한국어"
+            },
+            {
+                "value": "hu",
+                "label": "hu - Hungarian - Magyar"
+            },
+            {
+                "value": "sh",
+                "label": "sh - Serbo-Croatian - Srpskohrvatski / Српскохрватски"
+            },
+            {
+                "value": "ms",
+                "label": "ms - Malay - Bahasa Melayu"
+            },
+            {
+                "value": "ro",
+                "label": "ro - Romanian - Română"
+            },
+            {
+                "value": "tr",
+                "label": "tr - Turkish - Türkçe"
+            },
+            {
+                "value": "min",
+                "label": "min - Minangkabau - Minangkabau"
+            },
+            {
+                "value": "kk",
+                "label": "kk - Kazakh - Қазақша"
+            },
+            {
+                "value": "eo",
+                "label": "eo - Esperanto - Esperanto"
+            },
+            {
+                "value": "eu",
+                "label": "eu - Basque - Euskara"
+            },
+            {
+                "value": "sk",
+                "label": "sk - Slovak - Slovenčina"
+            },
+            {
+                "value": "da",
+                "label": "da - Danish - Dansk"
+            },
+            {
+                "value": "bg",
+                "label": "bg - Bulgarian - Български"
+            },
+            {
+                "value": "lt",
+                "label": "lt - Lithuanian - Lietuvių"
+            },
+            {
+                "value": "he",
+                "label": "he - Hebrew - עברית"
+            },
+            {
+                "value": "hr",
+                "label": "hr - Croatian - Hrvatski"
+            },
+            {
+                "value": "hy",
+                "label": "hy - Armenian - Հայերեն"
+            },
+            {
+                "value": "sl",
+                "label": "sl - Slovenian - Slovenščina"
+            },
+            {
+                "value": "et",
+                "label": "et - Estonian - Eesti"
+            },
+            {
+                "value": "uz",
+                "label": "uz - Uzbek - O‘zbek"
+            },
+            {
+                "value":" simple ",
+                "label": "simple  - Simple English - Simple English"
+            },
+            {
+                "value": "gl",
+                "label": "gl - Galician - Galego"
+            },
+            {
+                "value": "vo",
+                "label": "vo - Volapük - Volapük"
+            },
+            {
+                "value": "nn",
+                "label": "nn - Norwegian (Nynorsk) - Nynorsk"
+            },
+            {
+                "value": "hi",
+                "label": "hi - Hindi - हिन्दी"
+            },
+            {
+                "value": "el",
+                "label": "el - Greek - Ελληνικά"
+            },
+            {
+                "value": "la",
+                "label": "la - Latin - Latina"
+            },
+            {
+                "value": "az",
+                "label": "az - Azerbaijani - Azərbaycanca"
+            },
+            {
+                "value": "th",
+                "label": "th - Thai - ไทย"
+            },
+            {
+                "value": "ka",
+                "label": "ka - Georgian - ქართული"
+            },
+            {
+                "value": "oc",
+                "label": "oc - Occitan - Occitan"
+            },
+            {
+                "value": "mk",
+                "label": "mk - Macedonian - Македонски"
+            },
+            {
+                "value": "be",
+                "label": "be - Belarusian - Беларуская"
+            },
+            {
+                "value": "ce",
+                "label": "ce - Chechen - Нохчийн"
+            },
+            {
+                "value": "mg",
+                "label": "mg - Malagasy - Malagasy"
+            },
+            {
+                "value": "new",
+                "label": "new - Newar / Nepal Bhasa - नेपाल भाषा"
+            },
+            {
+                "value": "ta",
+                "label": "ta - Tamil - தமிழ்"
+            },
+            {
+                "value": "tt",
+                "label": "tt - Tatar - Tatarça / Татарча"
+            },
+            {
+                "value": "ur",
+                "label": "ur - Urdu - اردو"
+            },
+            {
+                "value": "pms",
+                "label": "pms - Piedmontese - Piemontèis"
+            },
+            {
+                "value": "tl",
+                "label": "tl - Tagalog - Tagalog"
+            },
+            {
+                "value": "cy",
+                "label": "cy - Welsh - Cymraeg"
+            },
+            {
+                "value": "te",
+                "label": "te - Telugu - తెలుగు"
+            },
+            {
+                "value": "lv",
+                "label": "lv - Latvian - Latviešu"
+            },
+            {
+                "value": "bs",
+                "label": "bs - Bosnian - Bosanski"
+            },
+            {
+                "value":" be-x-old ",
+                "label": "Belarold  - usian (Taraškievica) - Беларуская (тарашкевіца)"
+            },
+            {
+                "value": "ht",
+                "label": "ht - Haitian - Krèyol ayisyen"
+            },
+            {
+                "value": "br",
+                "label": "br - Breton - Brezhoneg"
+            },
+            {
+                "value": "sq",
+                "label": "sq - Albanian - Shqip"
+            },
+            {
+                "value": "jv",
+                "label": "jv - Javanese - Basa Jawa"
+            },
+            {
+                "value": "lb",
+                "label": "lb - Luxembourgish - Lëtzebuergesch"
+            },
+            {
+                "value": "mr",
+                "label": "mr - Marathi - मराठी"
+            },
+            {
+                "value": "is",
+                "label": "is - Icelandic - Íslenska"
+            },
+            {
+                "value": "ml",
+                "label": "ml - Malayalam - മലയാളം"
+            },
+            {
+                "value":" zh-yue ",
+                "label": "Canyue  - tonese - 粵語"
+            },
+            {
+                "value": "af",
+                "label": "af - Afrikaans - Afrikaans"
+            },
+            {
+                "value": "bn",
+                "label": "bn - Bengali - বাংলা"
+            },
+            {
+                "value": "ba",
+                "label": "ba - Bashkir - Башҡорт"
+            },
+            {
+                "value": "pnb",
+                "label": "pnb - Western Panjabi - شاہ مکھی پنجابی (Shāhmukhī Pañjābī)"
+            },
+            {
+                "value": "ga",
+                "label": "ga - Irish - Gaeilge"
+            },
+            {
+                "value": "my",
+                "label": "my - Burmese - မြန်မာဘာသာ"
+            },
+            {
+                "value": "lmo",
+                "label": "lmo - Lombard - Lumbaart"
+            },
+            {
+                "value": "fy",
+                "label": "fy - West Frisian - Frysk"
+            },
+            {
+                "value": "yo",
+                "label": "yo - Yoruba - Yorùbá"
+            },
+            {
+                "value": "tg",
+                "label": "tg - Tajik - Тоҷикӣ"
+            },
+            {
+                "value": "an",
+                "label": "an - Aragonese - Aragonés"
+            },
+            {
+                "value": "cv",
+                "label": "cv - Chuvash - Чăваш"
+            },
+            {
+                "value": "sco",
+                "label": "sco - Scots - Scots"
+            },
+            {
+                "value": "sw",
+                "label": "sw - Swahili - Kiswahili"
+            },
+            {
+                "value": "ky",
+                "label": "ky - Kirghiz - Кыргызча"
+            },
+            {
+                "value": "ne",
+                "label": "ne - Nepali - नेपाली"
+            },
+            {
+                "value": "io",
+                "label": "io - Ido - Ido"
+            },
+            {
+                "value": "gu",
+                "label": "gu - Gujarati - ગુજરાતી"
+            },
+            {
+                "value": "bpy",
+                "label": "bpy - Bishnupriya Manipuri - ইমার ঠার/বিষ্ণুপ্রিয়া মণিপুরী"
+            },
+            {
+                "value": "scn",
+                "label": "scn - Sicilian - Sicilianu"
+            },
+            {
+                "value": "nds",
+                "label": "nds - Low Saxon - Plattdüütsch"
+            },
+            {
+                "value": "ku",
+                "label": "ku - Kurdish - Kurdî / كوردی"
+            },
+            {
+                "value": "ast",
+                "label": "ast - Asturian - Asturianu"
+            },
+            {
+                "value": "qu",
+                "label": "qu - Quechua - Runa Simi"
+            },
+            {
+                "value": "gd",
+                "label": "gd - Scottish Gaelic - Gàidhlig"
+            },
+            {
+                "value": "als",
+                "label": "als - Alemannic - Alemannisch"
+            },
+            {
+                "value": "su",
+                "label": "su - Sundanese - Basa Sunda"
+            },
+            {
+                "value": "kn",
+                "label": "kn - Kannada - ಕನ್ನಡ"
+            },
+            {
+                "value": "pa",
+                "label": "pa - Punjabi - ਪੰਜਾਬੀ"
+            },
+            {
+                "value": "am",
+                "label": "am - Amharic - አማርኛ"
+            },
+            {
+                "value": "ckb",
+                "label": "ckb - Sorani - Soranî / کوردی"
+            },
+            {
+                "value": "ia",
+                "label": "ia - Interlingua - Interlingua"
+            },
+            {
+                "value": "nap",
+                "label": "nap - Neapolitan - Nnapulitano"
+            },
+            {
+                "value": "bug",
+                "label": "bug - Buginese - Basa Ugi"
+            },
+            {
+                "value": "mn",
+                "label": "mn - Mongolian - Монгол"
+            },
+            {
+                "value":" bat-smg ",
+                "label": "Samosmg  - gitian - Žemaitėška"
+            },
+            {
+                "value": "wa",
+                "label": "wa - Walloon - Walon"
+            },
+            {
+                "value": "arz",
+                "label": "arz - Egyptian Arabic - مصرى (Maṣri)"
+            },
+            {
+                "value":" map-bms ",
+                "label": "Banybms  - umasan - Basa Banyumasan"
+            },
+            {
+                "value":" zh-min-nan ",
+                "label": "Min Nannan  -  - Bân-lâm-gú"
+            },
+            {
+                "value": "si",
+                "label": "si - Sinhalese - සිංහල"
+            },
+            {
+                "value": "mzn",
+                "label": "mzn - Mazandarani - مَزِروني"
+            },
+            {
+                "value": "yi",
+                "label": "yi - Yiddish - ייִדיש"
+            },
+            {
+                "value": "fo",
+                "label": "fo - Faroese - Føroyskt"
+            },
+            {
+                "value": "sah",
+                "label": "sah - Sakha - Саха тыла (Saxa Tyla)"
+            },
+            {
+                "value": "sa",
+                "label": "sa - Sanskrit - संस्कृतम्"
+            },
+            {
+                "value": "bar",
+                "label": "bar - Bavarian - Boarisch"
+            },
+            {
+                "value": "vec",
+                "label": "vec - Venetian - Vèneto"
+            },
+            {
+                "value": "nah",
+                "label": "nah - Nahuatl - Nāhuatl"
+            },
+            {
+                "value": "os",
+                "label": "os - Ossetian - Иронау"
+            },
+            {
+                "value":" roa-tara ",
+                "label": "Taratara  - ntino - Tarandíne"
+            },
+            {
+                "value": "hsb",
+                "label": "hsb - Upper Sorbian - Hornjoserbsce"
+            },
+            {
+                "value": "li",
+                "label": "li - Limburgish - Limburgs"
+            },
+            {
+                "value": "or",
+                "label": "or - Oriya - ଓଡ଼ିଆ"
+            },
+            {
+                "value": "pam",
+                "label": "pam - Kapampangan - Kapampangan"
+            },
+            {
+                "value": "se",
+                "label": "se - Northern Sami - Sámegiella"
+            },
+            {
+                "value": "ilo",
+                "label": "ilo - Ilokano - Ilokano"
+            },
+            {
+                "value": "mrj",
+                "label": "mrj - Hill Mari - Кырык Мары (Kyryk Mary)"
+            },
+            {
+                "value": "mi",
+                "label": "mi - Maori - Māori"
+            },
+            {
+                "value": "co",
+                "label": "co - Corsican - Corsu"
+            },
+            {
+                "value": "mhr",
+                "label": "mhr - Meadow Mari - Олык Марий (Olyk Marij)"
+            },
+            {
+                "value": "hif",
+                "label": "hif - Fiji Hindi - Fiji Hindi"
+            },
+            {
+                "value": "bcl",
+                "label": "bcl - Central Bicolano - Bikol"
+            },
+            {
+                "value": "gan",
+                "label": "gan - Gan - 贛語"
+            },
+            {
+                "value": "frr",
+                "label": "frr - North Frisian - Nordfriisk"
+            },
+            {
+                "value": "bh",
+                "label": "bh - Bihari - भोजपुरी"
+            },
+            {
+                "value": "bo",
+                "label": "bo - Tibetan - བོད་སྐད"
+            },
+            {
+                "value": "rue",
+                "label": "rue - Rusyn - Русиньскый"
+            },
+            {
+                "value": "glk",
+                "label": "glk - Gilaki - گیلکی"
+            },
+            {
+                "value":" nds-nl ",
+                "label": "Dutcnl  - h Low Saxon - Nedersaksisch"
+            },
+            {
+                "value":" fiu-vro ",
+                "label": "Võrovro  -  - Võro"
+            },
+            {
+                "value": "vls",
+                "label": "vls - West Flemish - West-Vlams"
+            },
+            {
+                "value": "ps",
+                "label": "ps - Pashto - پښتو"
+            },
+            {
+                "value": "tk",
+                "label": "tk - Turkmen - تركمن / Туркмен"
+            },
+            {
+                "value": "pag",
+                "label": "pag - Pangasinan - Pangasinan"
+            },
+            {
+                "value": "diq",
+                "label": "diq - Zazaki - Zazaki"
+            },
+            {
+                "value": "xmf",
+                "label": "xmf - Mingrelian - მარგალური (Margaluri)"
+            },
+            {
+                "value": "gv",
+                "label": "gv - Manx - Gaelg"
+            },
+            {
+                "value": "sc",
+                "label": "sc - Sardinian - Sardu"
+            },
+            {
+                "value": "km",
+                "label": "km - Khmer - ភាសាខ្មែរ"
+            },
+            {
+                "value": "hak",
+                "label": "hak - Hakka - Hak-kâ-fa / 客家話"
+            },
+            {
+                "value": "csb",
+                "label": "csb - Kashubian - Kaszëbsczi"
+            },
+            {
+                "value": "kv",
+                "label": "kv - Komi - Коми"
+            },
+            {
+                "value": "zea",
+                "label": "zea - Zeelandic - Zeêuws"
+            },
+            {
+                "value": "crh",
+                "label": "crh - Crimean Tatar - Qırımtatarca"
+            },
+            {
+                "value": "vep",
+                "label": "vep - Vepsian - Vepsän"
+            },
+            {
+                "value":" zh-classical ",
+                "label": "Claclassical  - ssical Chinese - 古文 / 文言文"
+            },
+            {
+                "value": "ay",
+                "label": "ay - Aymara - Aymar"
+            },
+            {
+                "value": "so",
+                "label": "so - Somali - Soomaali"
+            },
+            {
+                "value": "dv",
+                "label": "dv - Divehi - ދިވެހިބަސް"
+            },
+            {
+                "value": "udm",
+                "label": "udm - Udmurt - Удмурт кыл"
+            },
+            {
+                "value": "kw",
+                "label": "kw - Cornish - Kernewek/Karnuack"
+            },
+            {
+                "value": "nrm",
+                "label": "nrm - Norman - Nouormand/Normaund"
+            },
+            {
+                "value": "rm",
+                "label": "rm - Romansh - Rumantsch"
+            },
+            {
+                "value": "wuu",
+                "label": "wuu - Wu - 吴语"
+            },
+            {
+                "value": "eml",
+                "label": "eml - Emilian-Romagnol - Emiliàn e rumagnòl"
+            },
+            {
+                "value": "koi",
+                "label": "koi - Komi-Permyak - Перем Коми (Perem Komi)"
+            },
+            {
+                "value": "ug",
+                "label": "ug - Uyghur - ئۇيغۇر تىلى"
+            },
+            {
+                "value": "stq",
+                "label": "stq - Saterland Frisian - Seeltersk"
+            },
+            {
+                "value": "lad",
+                "label": "lad - Ladino - Dzhudezmo"
+            },
+            {
+                "value": "lij",
+                "label": "lij - Ligurian - Líguru"
+            },
+            {
+                "value": "fur",
+                "label": "fur - Friulian - Furlan"
+            },
+            {
+                "value": "szl",
+                "label": "szl - Silesian - Ślůnski"
+            },
+            {
+                "value": "mt",
+                "label": "mt - Maltese - Malti"
+            },
+            {
+                "value": "as",
+                "label": "as - Assamese - অসমীয়া"
+            },
+            {
+                "value":" cbk-zam ",
+                "label": "Zambzam  - oanga Chavacano - Chavacano de Zamboanga"
+            },
+            {
+                "value": "gn",
+                "label": "gn - Guarani - Avañe'ẽ"
+            },
+            {
+                "value": "pcd",
+                "label": "pcd - Picard - Picard"
+            },
+            {
+                "value": "pi",
+                "label": "pi - Pali - पाऴि"
+            },
+            {
+                "value": "gag",
+                "label": "gag - Gagauz - Gagauz"
+            },
+            {
+                "value": "ksh",
+                "label": "ksh - Ripuarian - Ripoarisch"
+            },
+            {
+                "value": "ie",
+                "label": "ie - Interlingue - Interlingue"
+            },
+            {
+                "value": "ang",
+                "label": "ang - Anglo-Saxon - Englisc"
+            },
+            {
+                "value": "dsb",
+                "label": "dsb - Lower Sorbian - Dolnoserbski"
+            },
+            {
+                "value": "ace",
+                "label": "ace - Acehnese - Bahsa Acèh"
+            },
+            {
+                "value": "ext",
+                "label": "ext - Extremaduran - Estremeñu"
+            },
+            {
+                "value": "nv",
+                "label": "nv - Navajo - Diné bizaad"
+            },
+            {
+                "value": "frp",
+                "label": "frp - Franco-Provençal/Arpitan - Arpitan"
+            },
+            {
+                "value": "kab",
+                "label": "kab - Kabyle - Taqbaylit"
+            },
+            {
+                "value": "sn",
+                "label": "sn - Shona - chiShona"
+            },
+            {
+                "value": "mwl",
+                "label": "mwl - Mirandese - Mirandés"
+            },
+            {
+                "value": "lez",
+                "label": "lez - Lezgian - Лезги чІал (Lezgi č’al)"
+            },
+            {
+                "value": "ln",
+                "label": "ln - Lingala - Lingala"
+            },
+            {
+                "value": "cdo",
+                "label": "cdo - Min Dong - Mìng-dĕ̤ng-ngṳ̄"
+            },
+            {
+                "value": "pfl",
+                "label": "pfl - Palatinate German - Pälzisch"
+            },
+            {
+                "value": "krc",
+                "label": "krc - Karachay-Balkar - Къарачай-Малкъар (Qarachay-Malqar)"
+            },
+            {
+                "value": "haw",
+                "label": "haw - Hawaiian - Hawai`i"
+            },
+            {
+                "value": "pdc",
+                "label": "pdc - Pennsylvania German - Deitsch"
+            },
+            {
+                "value": "xal",
+                "label": "xal - Kalmyk - Хальмг"
+            },
+            {
+                "value": "myv",
+                "label": "myv - Erzya - Эрзянь (Erzjanj Kelj)"
+            },
+            {
+                "value": "rw",
+                "label": "rw - Kinyarwanda - Ikinyarwanda"
+            },
+            {
+                "value": "nov",
+                "label": "nov - Novial - Novial"
+            },
+            {
+                "value": "kaa",
+                "label": "kaa - Karakalpak - Qaraqalpaqsha"
+            },
+            {
+                "value": "to",
+                "label": "to - Tongan - faka Tonga"
+            },
+            {
+                "value": "kl",
+                "label": "kl - Greenlandic - Kalaallisut"
+            },
+            {
+                "value": "arc",
+                "label": "arc - Aramaic - ܐܪܡܝܐ"
+            },
+            {
+                "value": "bjn",
+                "label": "bjn - Banjar - Bahasa Banjar"
+            },
+            {
+                "value": "lo",
+                "label": "lo - Lao - ລາວ"
+            },
+            {
+                "value": "kbd",
+                "label": "kbd - Kabardian Circassian - Адыгэбзэ (Adighabze)"
+            },
+            {
+                "value": "ha",
+                "label": "ha - Hausa - هَوُسَ"
+            },
+            {
+                "value": "pap",
+                "label": "pap - Papiamentu - Papiamentu"
+            },
+            {
+                "value": "av",
+                "label": "av - Avar - Авар"
+            },
+            {
+                "value": "ty",
+                "label": "ty - Tahitian - Reo Mā`ohi"
+            },
+            {
+                "value": "tpi",
+                "label": "tpi - Tok Pisin - Tok Pisin"
+            },
+            {
+                "value": "bxr",
+                "label": "bxr - Buryat (Russia) - Буряад"
+            },
+            {
+                "value": "na",
+                "label": "na - Nauruan - dorerin Naoero"
+            },
+            {
+                "value": "mdf",
+                "label": "mdf - Moksha - Мокшень (Mokshanj Kälj)"
+            },
+            {
+                "value": "lbe",
+                "label": "lbe - Lak - Лакку"
+            },
+            {
+                "value": "jbo",
+                "label": "jbo - Lojban - Lojban"
+            },
+            {
+                "value": "wo",
+                "label": "wo - Wolof - Wolof"
+            },
+            {
+                "value":" roa-rup ",
+                "label": "Aromrup  - anian - Armãneashce"
+            },
+            {
+                "value": "srn",
+                "label": "srn - Sranan - Sranantongo"
+            },
+            {
+                "value": "ig",
+                "label": "ig - Igbo - Igbo"
+            },
+            {
+                "value": "tet",
+                "label": "tet - Tetum - Tetun"
+            },
+            {
+                "value": "nso",
+                "label": "nso - Northern Sotho - Sepedi"
+            },
+            {
+                "value": "tyv",
+                "label": "tyv - Tuvan - Тыва"
+            },
+            {
+                "value": "kg",
+                "label": "kg - Kongo - KiKongo"
+            },
+            {
+                "value": "ab",
+                "label": "ab - Abkhazian - Аҧсуа"
+            },
+            {
+                "value": "sd",
+                "label": "sd - Sindhi - سنڌي، سندھی ، सिन्ध"
+            },
+            {
+                "value": "ltg",
+                "label": "ltg - Latgalian - Latgaļu"
+            },
+            {
+                "value": "zu",
+                "label": "zu - Zulu - isiZulu"
+            },
+            {
+                "value": "za",
+                "label": "za - Zhuang - Cuengh"
+            },
+            {
+                "value": "om",
+                "label": "om - Oromo - Oromoo"
+            },
+            {
+                "value": "tw",
+                "label": "tw - Twi - Twi"
+            },
+            {
+                "value": "chy",
+                "label": "chy - Cheyenne - Tsetsêhestâhese"
+            },
+            {
+                "value": "mai",
+                "label": "mai - Maithili - मैथिली"
+            },
+            {
+                "value": "rmy",
+                "label": "rmy - Romani - romani - रोमानी"
+            },
+            {
+                "value": "cu",
+                "label": "cu - Old Church Slavonic - Словѣньскъ"
+            },
+            {
+                "value": "chr",
+                "label": "chr - Cherokee - ᏣᎳᎩ"
+            },
+            {
+                "value": "tn",
+                "label": "tn - Tswana - Setswana"
+            },
+            {
+                "value": "got",
+                "label": "got - Gothic - 𐌲𐌿𐍄𐌹𐍃𐌺"
+            },
+            {
+                "value": "bi",
+                "label": "bi - Bislama - Bislama"
+            },
+            {
+                "value": "pih",
+                "label": "pih - Norfolk - Norfuk"
+            },
+            {
+                "value": "rn",
+                "label": "rn - Kirundi - Kirundi"
+            },
+            {
+                "value": "sm",
+                "label": "sm - Samoan - Gagana Samoa"
+            },
+            {
+                "value": "bm",
+                "label": "bm - Bambara - Bamanankan"
+            },
+            {
+                "value": "ss",
+                "label": "ss - Swati - SiSwati"
+            },
+            {
+                "value": "mo",
+                "label": "mo - Moldovan - Молдовеняскэ"
+            },
+            {
+                "value": "iu",
+                "label": "iu - Inuktitut - ᐃᓄᒃᑎᑐᑦ"
+            },
+            {
+                "value": "xh",
+                "label": "xh - Xhosa - isiXhosa"
+            },
+            {
+                "value": "ki",
+                "label": "ki - Kikuyu - Gĩkũyũ"
+            },
+            {
+                "value": "pnt",
+                "label": "pnt - Pontic - Ποντιακά"
+            },
+            {
+                "value": "lg",
+                "label": "lg - Luganda - Luganda"
+            },
+            {
+                "value": "ts",
+                "label": "ts - Tsonga - Xitsonga"
+            },
+            {
+                "value": "ee",
+                "label": "ee - Ewe - Eʋegbe"
+            },
+            {
+                "value": "ak",
+                "label": "ak - Akan - Akana"
+            },
+            {
+                "value": "ti",
+                "label": "ti - Tigrinya - ትግርኛ"
+            },
+            {
+                "value": "fj",
+                "label": "fj - Fijian - Na Vosa Vakaviti"
+            },
+            {
+                "value": "ks",
+                "label": "ks - Kashmiri - कश्मीरी / كشميري"
+            },
+            {
+                "value": "sg",
+                "label": "sg - Sango - Sängö"
+            },
+            {
+                "value": "ff",
+                "label": "ff - Fula - Fulfulde"
+            },
+            {
+                "value": "ny",
+                "label": "ny - Chichewa - Chichewa"
+            },
+            {
+                "value": "ve",
+                "label": "ve - Venda - Tshivenda"
+            },
+            {
+                "value": "st",
+                "label": "st - Sesotho - Sesotho"
+            },
+            {
+                "value": "ch",
+                "label": "ch - Chamorro - Chamoru"
+            },
+            {
+                "value": "cr",
+                "label": "cr - Cree - Nehiyaw"
+            },
+            {
+                "value": "dz",
+                "label": "dz - Dzongkha - ཇོང་ཁ"
+            },
+            {
+                "value": "ik",
+                "label": "ik - Inupiak - Iñupiak"
+            },
+            {
+                "value": "tum",
+                "label": "tum - Tumbuka - chiTumbuka"
+            },
+            {
+                "value": "ng",
+                "label": "ng - Ndonga - Oshiwambo"
+            },
+            {
+                "value": "ii",
+                "label": "ii - Sichuan Yi - ꆇꉙ"
+            },
+            {
+                "value": "cho",
+                "label": "cho - Choctaw - Choctaw"
+            },
+            {
+                "value": "mh",
+                "label": "mh - Marshallese - Ebon"
+            },
+            {
+                "value": "aa",
+                "label": "aa - Afar - Afar"
+            },
+            {
+                "value": "kj",
+                "label": "kj - Kuanyama - Kuanyama"
+            },
+            {
+                "value": "ho",
+                "label": "ho - Hiri Motu - Hiri Motu"
+            },
+            {
+                "value": "mus",
+                "label": "mus - Muscogee - Muskogee"
+            },
+            {
+                "value": "kr",
+                "label": "kr - Kanuri - Kanuri"
+            },
+            {
+                "value": "hz",
+                "label": "hz - Herero - Otsiherero"
+            }
+        ]
+    },
+    {
+        "name"       : "isWikipediaOnlyEnabled",
+        "title"      : "Wikipedia only",
+        "description": "Do not search the dictionary",
+        "type"       : "bool",
+        "value"      : false
+    },
+    {
+        "name"       : "isRandomExampleEnabled",
+        "title"      : "Random example",
+        "description": "Show a random example with every word lookup",
+        "type"       : "bool",
+        "value"      : true
+    }]
+}
