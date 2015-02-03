@@ -38,6 +38,7 @@
     const googleNormalURL           = "https://www.google.com/search?q="
     const noDefinitionFoundText     = "No definition found on ";
     const noDefinitionFoundWikiZone = ".wikipedia.org";
+    const defaultLanguageCode       = "en";
 
     // Function from jQuery JavaScript Library v1.11.2
     function isEmptyObject( obj ) {
@@ -81,7 +82,7 @@
 
                 annotationMore.className = "";
                 /* Google 'define' keyword only works for English */
-                var googleURL = global.config.wikipediaLanguageCode === "en" ? googleDefineURL : googleNormalURL;
+                var googleURL = global.config.wikipediaLanguageCode === defaultLanguageCode ? googleDefineURL : googleNormalURL;
                 annotationMore.firstChild.setAttribute('href', googleURL + global.dictionaryData.title);
                 annotationMore.style.marginTop = "10px";
             }
@@ -198,7 +199,7 @@
         }
     };
 
-    self.port.on("examplesListener", function(examplesResponse) {
+    self.port.on("wordnikExamplesListener", function(examplesResponse) {
 
         if (global.mustCancelOperations === true) return;
         examplesResponse = JSON.parse(examplesResponse);
@@ -226,7 +227,85 @@
 
     });
 
-    self.port.on("audioListener", function(audioResponse) {
+    function getFileExtension(filename) {
+        var a = filename.trim().split(".");
+        if( a.length === 1 || ( a[0] === "" && a.length === 2 ) ) {
+            return "";
+        }
+        return a.pop().toLowerCase();
+    }
+
+    function getLanguageCode() {
+        var languageCode = defaultLanguageCode;
+        if (global.dictionaryData.source === "wikipedia") {
+            languageCode = global.config.wikipediaLanguageCode;
+        }
+        return languageCode;
+    }
+ 
+    self.port.on("wiktionaryAudioFileURLListener", function(response) {
+
+        if (global.mustCancelOperations === true) return;
+        response = JSON.parse(response);
+
+        var pageKey = Object.keys(response.query.pages)[0];
+
+        if (pageKey!=="-1") {
+            var page = response.query.pages[pageKey];
+            var fileURL = page.imageinfo[0].url;
+            global.dictionaryData.audioFileURL = fileURL;
+            // Show speaker symbol. Click symbol to play file.
+            showAnnotationBubble();
+        }
+    });
+
+    self.port.on("wiktionaryAudioListener", function(response) {
+
+        if (global.mustCancelOperations === true) return;
+        response = JSON.parse(response);
+
+        var pageKey = response!=null && Object.keys(response.query.pages)[0] || -1;
+
+        if (pageKey!=="-1") {
+
+            var page = response.query.pages[pageKey];
+            var audioFileFound = false;
+
+            if (typeof page.images !== 'undefined') {
+                page.images.forEach(function(image, index, array) {
+
+                    if (audioFileFound) return;
+
+                    // E.g. 'Fichier:' -> 'File:' because commons.wikimedia.org
+                    // only speaks English.
+                    var fileNameWithPrefix = image.title.replace(/.*:/,"File:");
+                    var fileName = image.title.replace(/.*:/,"");
+
+                    // If the found file is in the current language 
+                    // then check for audio extensions.
+                    if (fileName.toLowerCase().indexOf(getLanguageCode())===0) {
+ 
+                        var extension = getFileExtension(fileName);
+
+                        if (['ogg','flac','wav'].indexOf(extension)!==-1) {
+
+                            audioFileFound = true;
+
+                            self.port.emit("sendGetRequest", {
+                                type         : "wiktionaryAudioFileURL",
+                                keyword      : fileNameWithPrefix,
+                                languageCode : getLanguageCode(),
+                                onComplete   : "wiktionaryAudioFileURLListener"
+                            });
+
+                        }
+                    }
+                });
+            }
+        }
+    });
+
+    self.port.on("wordnikAudioListener", function(audioResponse) {
 
         if (global.mustCancelOperations === true) return;
         audioResponse = JSON.parse(audioResponse);
@@ -236,10 +315,9 @@
 
             audioResponse.forEach(function(element, index, array) {
 
-                global.dictionaryData.audioFileURL = element.fileUrl;
-
                 // Skip AHD (pronunciation unclear)
                 if (element.createdBy!=='ahd')
+                    global.dictionaryData.audioFileURL = element.fileUrl;
 
                 // Save Macmillan
                 if (element.createdBy==='macmillan')
@@ -249,16 +327,18 @@
             // Prefer Macmillan
             if (macmillan!==null)
                 global.dictionaryData.audioFileURL = macmillan;
-
-            showAnnotationBubble();
         }
 
-        if (global.config.isRandomExampleEnabled) {
+        if (global.dictionaryData.audioFileURL === "") {
             self.port.emit("sendGetRequest", {
-                type       : "examples",
-                word       : global.selectedTextString,
-                onComplete : "examplesListener"
+                type         : "wiktionaryAudio",
+                keyword      : global.dictionaryData.title,
+                languageCode : getLanguageCode(),
+                onComplete   : "wiktionaryAudioListener"
             });
+        }
+        else {
+            showAnnotationBubble();
         }
     });
 
@@ -303,14 +383,30 @@
             }
 
             showAnnotationBubble();
+
+            if (getLanguageCode() === defaultLanguageCode) {
+                self.port.emit("sendGetRequest", {
+                    type       : "wordnikAudio",
+                    keyword    : global.dictionaryData.title,
+                    onComplete : "wordnikAudioListener"
+                });
+            }
+            else { 
+                self.port.emit("sendGetRequest", {
+                    type         : "wiktionaryAudio",
+                    keyword      : global.dictionaryData.title,
+                    languageCode : global.config.wikipediaLanguageCode,
+                    onComplete   : "wiktionaryAudioListener"
+                });
+            }
         }
 
         if (global.config.isRandomExampleEnabled) {
 
             self.port.emit("sendGetRequest", {
-                type       : "examples",
-                word       : global.selectedTextString,
-                onComplete : "examplesListener"
+                type       : "wordnikExamples",
+                keyword    : global.selectedTextString,
+                onComplete : "wordnikExamplesListener"
             });
         }
     });
@@ -328,18 +424,26 @@
 
             showAnnotationBubble();
 
-            self.port.emit("sendGetRequest", {
-                type       : "audio",
-                word       : global.selectedTextString,
-                onComplete : "audioListener"
-            });
+            if (global.config.isRandomExampleEnabled) {
 
+                self.port.emit("sendGetRequest", {
+                    type       : "wordnikExamples",
+                    keyword    : global.selectedTextString,
+                    onComplete : "wordnikExamplesListener"
+                });
+            }
+
+            self.port.emit("sendGetRequest", {
+                type       : "wordnikAudio",
+                keyword    : global.dictionaryData.title,
+                onComplete : "wordnikAudioListener"
+            });
         }
         else {
 
             self.port.emit("sendGetRequest", {
                 type         : "wikipediaExtract",
-                word         : global.selectedTextString,
+                keyword      : global.selectedTextString,
                 languageCode : global.config.wikipediaLanguageCode,
                 onComplete   : "wikipediaExtractListener"
             });
@@ -548,15 +652,15 @@
 
             self.port.emit("sendGetRequest", {
                 type         : "wikipediaExtract",
-                word         : global.selectedTextString,
+                keyword      : global.selectedTextString,
                 languageCode : global.config.wikipediaLanguageCode,
                 onComplete   : "wikipediaExtractListener"
             });
         }
         else {
             self.port.emit("sendGetRequest", {
-                type       : "definitions",
-                word       : global.selectedTextString,
+                type       : "wordnikDefinitions",
+                keyword    : global.selectedTextString,
                 onComplete : "definitionListener"
             });
         }
@@ -617,8 +721,6 @@
 
          /* Request templates from add-on data folder */
          self.port.emit("getConfigAndTemplate", {
-             type          : "definitions",
-             word          : global.selectedTextString,
              onComplete    : "configAndTemplateListener"
          });
     }, true);

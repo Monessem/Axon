@@ -1,13 +1,14 @@
 {
     "name": "axon",
     "title": "Axon - Wikipedia & Wordnik client",
-    "id": "jid1-pBCQ3G0mXLBZMw",
-    "description": "Double-click on a word to show the Wordnik dictionary definition.\nIf the selected word or name is not found in the dictionary Axon continues on Wikipedia.\nTo search Wikipedia immediately, hold down Ctrl and double-click on a word.",
+    "id": "jid1-xJdHsGBXo4PEKA",
+    "description": "Double-click on a word to show the Wordnik dictionary definition. \n\nIf the selected word or name is not found in the dictionary Axon continues on Wikipedia.\nTo search Wikipedia immediately, hold down Ctrl and double-click on a word.",
     "author": "Ivo van Kamp",
     "license": "GPL 3",
-    "version": "0.1",
+    "version": "0.2",
     "icon": "./data/Images/icon-64.png",
-    "preferences": [{
+    "preferences": [
+    {
         "name"       : "mainWikipediaLanguageCode",
         "type"       : "menulist",
         "title"      : "Main Wikipedia website",

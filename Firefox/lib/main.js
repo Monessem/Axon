@@ -30,9 +30,11 @@ const SimplePrefs = require("sdk/simple-prefs");
 const {Cu}        = require('chrome');
 const {Services}  = Cu.import('resource://gre/modules/Services.jsm');
 
-const wordnikAPIBaseURL   = "http://api.wordnik.com:80/v4/word.json/";
-const wikipediaAPIBaseURL = "https://{LANGUAGECODE}.wikipedia.org/w/api.php?";
-const wordnikAPIKey       = "a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5";
+const wordnikAPIBaseURL    = "http://api.wordnik.com:80/v4/word.json/";
+const wikipediaAPIBaseURL  = "https://{LANGUAGECODE}.wikipedia.org/w/api.php?";
+const wiktionaryAPIBaseURL = "https://{LANGUAGECODE}.wiktionary.org/w/api.php?";
+const wordnikAPIKey        = "a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5";
+const wikimediaAPIBaseURL  = "https://commons.wikimedia.org/w/api.php?";
 
 var button = Buttons.ActionButton({
     id: "mozilla-link",
@@ -43,7 +45,7 @@ var button = Buttons.ActionButton({
         "64": "./Images/icon-64.png"
     },
     onClick: function() {
-        Services.wm.getMostRecentWindow('navigator:browser').BrowserOpenAddonsMgr('addons://detail/jid1-pBCQ3G0mXLBZMw%40jetpack/preferences');
+        Services.wm.getMostRecentWindow('navigator:browser').BrowserOpenAddonsMgr('addons://detail/jid1-xJdHsGBXo4PEKA%40jetpack/preferences');
     }
 });
 
@@ -58,35 +60,44 @@ function getWordnikURL(word, parameters) {
 function getWikipediaURL(wikipediaLanguageCode, word, parameters) {
     var url = "";
     url += wikipediaAPIBaseURL.replace(/{LANGUAGECODE}/, wikipediaLanguageCode);
-    url += parameters+word;
+    url += parameters;
+    url += "&titles="+word;
     return url;
 }
 
-function onTabReady(tab) {
-    tab.attach({
-        contentScriptFile: [
-            Self.data.url("listeners.js")
-        ]
-    });
-    // Only need tab ready when Firefox starts with tabs from last
-    // time because PageMod contentScriptFile doesn't get executed in
-    // this case. PageMod does attach the worker.
-    // Remove the listener, PageMod will take care of new pages.
-    Tabs.removeListener("ready", onTabReady);
+function getWiktionaryURL(wiktionaryLanguageCode, word, parameters) {
+    var url="";
+    url += wiktionaryAPIBaseURL.replace(/{LANGUAGECODE}/, wiktionaryLanguageCode);
+    url += parameters;
+    url += "&titles="+word;
+    return url;
 }
 
-/* On launching Firefox 35.0 PageMod contentScriptFile's aren't loaded
- * when using preference 'Show my windows and tabs from last time'.
- * The Tabs ready event however works just fine.
- */
-Tabs.on('ready', onTabReady);
+function getWikimediaURL(fileName, parameters) {
+    var url="";
+    url += wikimediaAPIBaseURL;
+    url += parameters;
+    url += "&titles="+fileName;
+    return url;
+}
+
+// Only need to attach listeners.js when Firefox starts with tabs
+// from last time because PageMod contentScriptFile sometimes doesn't get
+// executed in this case (Firefox 35.0). PageMod does attach the worker.
+exports.main = function (options, callbacks) {
+    if (options.loadReason==="startup") {
+        for (let tab of Tabs) {
+            tab.attach({
+                contentScriptFile: Self.data.url("listeners.js")
+            });
+        }
+    }
+};
 
 PageMod.PageMod({
 
    include: "*",
-   contentScriptFile: [ /* not executed on browser launch? */
-        Self.data.url("listeners.js")
-   ],
+   contentScriptFile: Self.data.url("listeners.js"),
    contentScriptWhen: "start",
    attachTo: ["top", "frame", "existing"],
    onAttach: function(worker) {
@@ -97,6 +108,7 @@ PageMod.PageMod({
                 htmlTemplateCss: Self.data.load("template.css"),
                 isRandomExampleEnabled: SimplePrefs.prefs.isRandomExampleEnabled,
                 isWikipediaOnlyEnabled: SimplePrefs.prefs.isWikipediaOnlyEnabled,
+                // Wikipedia language selection (see package.json; list source: http://meta.wikimedia.org/wiki/List_of_Wikipedias)
                 mainWikipediaLanguageCode: SimplePrefs.prefs.mainWikipediaLanguageCode,
                 immediateLookupWikipediaLanguageCode: SimplePrefs.prefs.immediateLookupWikipediaLanguageCode
             };
@@ -107,23 +119,29 @@ PageMod.PageMod({
         worker.port.on("sendGetRequest", function(response) {
 
             var url = "";
-            var searchWord = response.word;
+            var searchKeyword = response.keyword;
 
             switch(response.type) {
-                case "definitions":
-                    url = getWordnikURL(searchWord, "/definitions?limit=1&includeRelated=true&useCanonical=true&includeTags=false");
+                case "wordnikDefinitions":
+                    url = getWordnikURL(searchKeyword, "/definitions?limit=1&includeRelated=true&useCanonical=true&includeTags=false");
                 break;
-                case "audio":
-                    url = getWordnikURL(searchWord, "/audio?useCanonical=true&limit=50");
+                case "wordnikAudio":
+                    url = getWordnikURL(searchKeyword, "/audio?useCanonical=true&limit=50");
                     break;
-                case "topExample"://unused
-                    url = getWordnikURL(searchWord, "/topExample?useCanonical=true");
+                case "wordnikTopExample"://unused
+                    url = getWordnikURL(searchKeyword, "/topExample?useCanonical=true");
                 break;
-                case "examples":
-                    url = getWordnikURL(searchWord, "/examples?includeDuplicates=false&useCanonical=true&skip=0&limit=25");
+                case "wordnikExamples":
+                    url = getWordnikURL(searchKeyword, "/examples?includeDuplicates=false&useCanonical=true&skip=0&limit=25");
+                break;
+                case "wiktionaryAudio":
+                    url = getWiktionaryURL(response.languageCode, searchKeyword, "action=query&prop=images&format=json&redirects=&continue=");
+                break;
+                case "wiktionaryAudioFileURL":
+                    url = getWikimediaURL(searchKeyword, "action=query&prop=imageinfo&iiprop=url&format=json&continue=");
                 break;
                 case "wikipediaExtract":
-                    url = getWikipediaURL(response.languageCode, searchWord, "action=query&redirects=continue=&prop=extracts&format=json&exchars=350&titles=");
+                    url = getWikipediaURL(response.languageCode, searchKeyword, "action=query&prop=extracts&format=json&exchars=350&redirects=&continue=");
                 break;
             }
 

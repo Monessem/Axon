@@ -1,0 +1,34 @@
+
+
+                // Remove line breaks
+                wikiText = wikiText.replace(/(\r\n|\n|\r)/gm,"");
+
+                // Find accolade tags
+                var allAccoladeTags = wikiText.replace(/.*?({{.*?}}).*?/gi, "$1;");
+
+                // Remove ending (non replaced text)
+                allAccoladeTags = allAccoladeTags.replace(/({{.*}}).*$/,"$1");
+
+                // Find audio tags and keep only the filename part
+                var audioTags = allAccoladeTags.replace(/.*?{{audio[^|]*?\|([^|]*).*?}}.*?/gi,"$1;")
+
+                // Remove ending (non replaced text)
+                audioTags = audioTags.replace(/(.*?){{.*}}.*$/,"$1");
+
+
+http://commons.wikimedia.org/wiki/Commons:FAQ#What_are_the_strangely_named_components_in_file_paths.3F
+------------------------------------------------------------------------------------------------------
+
+Where does that "/a/ae" part come from?
+
+    The "a" and "ae" denote some subdirectories that are used to avoid problems with directories containing too many files. Imagine all the millions of files at the Commons in one directory! Some operating systems have problems dealing with directories with many files. (Try working with a folder containing a few thousand files on Windows...)
+
+Can it be calculated from the file name?
+
+    Yes. It's the first and the first two characters of the MD5 hash of the filename (blanks replaced by underscores) without namespace part. The file name "Spelterini_Blüemlisalp.jpg" has the MD5 hash "ae1a26d34d6a674d4400c8a1e6fe73f8".
+    MediaWiki installations can be configured on how to generate these filenames and directory structures. Any MediaWiki installation has one or more file repositories, which may be local or not. First, such subdirectories are used only if the global server-side configuration setting $wgHashedUploadDirectory is true (or $wgHashedSharedUploadDirectory for shared repositories). Then, for each file repository, there is a property called hashLevels that determines how deep the directory structure shall be. If zero, no such intermediary directories are used. If set to e.g. 3, three levels of directories are used; for the example above, one would get "/a/ae/ae1".
+    This method of storing files has been in MediaWiki since version 1.1 (and possibly even earlier), though it became a bit more configurable over time; initially, it was hardcoded to use two hash levels.
+    You can check what the file URL for a given file name will be at Special:FilePath. The file path can also be queried through the MediaWiki API using e.g. a query like http://commons.wikimedia.org/w/api.php?action=query&titles=File:Spelterini_Bl%C3%BCemlisalp.jpg&prop=imageinfo&iiprop=url. Both these methods, however, work only for existing files.
+    Online MD5 calculators differ in the way they treat UTF-8 input. Two that return values consistent with the way MediaWiki hashes UTF-8 strings are md5.cz and md5.md.
+
+
