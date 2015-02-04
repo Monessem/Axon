@@ -1,6 +1,14 @@
-Axon - Wikipedia & Wordnik Firefox add-on
+Axon - Wordnik & Wikipedia Firefox add-on
 
 Axon provides access to the Wordnik dictionary and all Wikipedia
 articles in every language. Double-clicking on a word opens the
 Wordnik dictionary definition in a speech bubble.
-If the word could not be found Axon continues on Wikipedia.
+If the word can not be found Axon continues on Wikipedia.
+
+
+Links
+-----
+API sandbox
+Use this page to experiment with the MediaWiki web service API.
+http://[LANGUAGECODE].wikipedia.org/wiki/Special:ApiSandbox
+

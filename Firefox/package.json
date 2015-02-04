@@ -2,7 +2,7 @@
     "name": "axon",
     "title": "Axon - Wikipedia & Wordnik add-on",
     "id": "jid1-xJdHsGBXo4PEKA",
-    "description": "Double-click on a word to show the Wordnik dictionary definition. \n\nIf the selected word or name is not found in the dictionary Axon continues on Wikipedia.\nTo search Wikipedia immediately, hold down Ctrl and double-click on a word.",
+    "description": "Axon provides access to the Wordnik dictionary and all Wikipedia articles in every language. \n\nDouble-click on a word to open the Wordnik dictionary definition in a speech balloon. If the word could not be found Axon continues on Wikipedia. To search Wikipedia immediately, hold down the hotkey and double-click on a word.",
     "author": "Ivo van Kamp",
     "license": "GPL 3",
     "version": "0.3",
@@ -1172,8 +1172,8 @@
     {
         "name"       : "immediateLookupWikipediaLanguageCode",
         "type"       : "menulist",
-        "title"      : "Immediate lookup Wikipedia website",
-        "description": "Wiki to use when holding Ctrl and double-clicking",
+        "title"      : "Hotkey Wikipedia website",
+        "description": "Wiki used when holding the hotkey and double-clicking",
         "value"      : "en",
         "options": [
             {
@@ -2331,6 +2331,31 @@
         ]
     },
     {
+        "name"       : "hotkey",
+        "type"       : "menulist",
+        "title"      : "Hotkey",
+        "description": "Select a hotkey to search the wiki selected above",
+        "value"      : "ctrl",
+        "options": [
+            {
+                "value": "ctrl",
+                "label": "Ctrl"
+            },
+            {
+                "value": "alt",
+                "label": "Alt"
+            },
+            {
+                "value": "shift",
+                "label": "Shift"
+            },
+            {
+                "value": "cmd",
+                "label": "Cmd (OS X)"
+            }
+        ]
+    },
+    {
         "name"       : "isWikipediaOnlyEnabled",
         "title"      : "Wikipedia only",
         "description": "Do not search the dictionary",
@@ -2343,5 +2368,13 @@
         "description": "Show a random example with every word lookup",
         "type"       : "bool",
         "value"      : true
+    },
+    {
+        "name"       : "axonMaximumWaitTime",
+        "title"      : "Maximum wait time",
+        "description": "Maximum number of milliseconds to wait for a response",
+        "type"       : "integer",
+        "value"      : "5000",
+        "hidden"     : true
     }]
 }

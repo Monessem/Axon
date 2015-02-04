@@ -1,3 +1,11 @@
+07-feb-2015
+   Version 0.4
+        - Added configurable hotkey to search Wikipedia directly
+        - Added timeout after which HTTP requests abort as a hidden
+          preference in package.json: axonMaximumWaitTime. Configurable
+          through about:config.
+        - Various bugfixes
+
 04-feb-2015
    Version 0.3
         - New functionality: if a Wikipedia entry could not be found

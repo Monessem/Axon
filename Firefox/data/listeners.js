@@ -31,15 +31,18 @@
     global.isTextBubbleAboveSelectedText = true;  // whereabouts of definition speech bubble to correctly position example text
     global.isTemplateLoaded              = false; // prevents loading template multiple times
     global.mustCancelOperations          = false; // cancel calls in process after esc, close button, or clicking next to the speech bubbles
+    global.modifierKeyPressedString      = "";    // the modifier key held down during double-click
 
-    const wordnikWordURL            = "https://www.wordnik.com/words/";
-    const wikipediaWikiURL          = "https://{LANGUAGECODE}.wikipedia.org/wiki/";
-    const wikipediaSpecialSearchURL = "https://{LANGUAGECODE}.wikipedia.org/wiki/Special:Search/";
-    const googleDefineURL           = "https://www.google.com/search?hl=en&q=define+"
-    const googleNormalURL           = "https://www.google.com/search?q="
-    const noDefinitionFoundText     = "No definition found on ";
-    const noDefinitionFoundWikiZone = ".wikipedia.org";
-    const defaultLanguageCode       = "en";
+    const WORDNIK_WORD_URL              = "https://www.wordnik.com/words/";
+    const WIKIPEDIA_WIKI_URL            = "https://{LANGUAGECODE}.wikipedia.org/wiki/";
+    const WIKIPEDIA_SPECIAL_SEARCH_URL  = "https://{LANGUAGECODE}.wikipedia.org/wiki/Special:Search/";
+    const GOOGLE_DEFINE_URL             = "https://www.google.com/search?hl=en&q=define+"
+    const GOOGLE_NORMAL_URL             = "https://www.google.com/search?q="
+    const START_OF_SEARCH_TEXT          = "Searching...";
+    const NO_DEFINITION_FOUND_TEXT      = "No definition found on ";
+    const NO_DEFINITION_FOUND_WIKI_ZONE = ".wikipedia.org";
+    const ENGLISH_LANGUAGE_CODE         = "en";
+    const MODIFIER_KEYS                 = {"ctrl": "ctrlKey", "shift": "shiftKey", "alt": "altKey", "cmd": "metaKey"};
 
     // Function from jQuery JavaScript Library v1.11.2
     function isEmpty( obj ) {
@@ -75,7 +78,7 @@
 
             if (global.dictionaryData.source === "wikipedia") {
                 annotationAttribution.className = "";
-                var wikipediaURL = wikipediaWikiURL.replace(/{LANGUAGECODE}/, global.config.wikipediaLanguageCode);
+                var wikipediaURL = WIKIPEDIA_WIKI_URL.replace(/{LANGUAGECODE}/, global.config.wikipediaLanguageCode);
                 wikipediaURL += global.dictionaryData.title;
                 annotationAttribution.firstChild.setAttribute('href', wikipediaURL);
                 //FIXME: non html
@@ -83,13 +86,13 @@
 
                 annotationMore.className = "";
                 /* Google 'define' keyword only works for English */
-                var googleURL = global.config.wikipediaLanguageCode === defaultLanguageCode ? googleDefineURL : googleNormalURL;
+                var googleURL = global.config.wikipediaLanguageCode === ENGLISH_LANGUAGE_CODE ? GOOGLE_DEFINE_URL : GOOGLE_NORMAL_URL;
                 annotationMore.firstChild.setAttribute('href', googleURL + global.dictionaryData.title);
                 annotationMore.style.marginTop = "10px";
             }
             else {
                 annotationMore.className = "";
-                annotationMore.firstChild.setAttribute('href', wordnikWordURL + global.dictionaryData.title);
+                annotationMore.firstChild.setAttribute('href', WORDNIK_WORD_URL + global.dictionaryData.title);
                 annotationMore.style.marginTop = "8px";
             }
         }
@@ -117,7 +120,7 @@
         });
     }
 
-    function setAnnotationBubblePosition() {
+    function setAnnotationBubblePosition(forceDirectionDown) {
 
         var bubbleHeight = document.getElementById('annotation-main').offsetHeight;
 
@@ -126,8 +129,10 @@
             document.getElementById('annotation-tail-main').style.left = (global.selectedTextPosition.leftCenter-14)+"px";
             document.getElementById('annotation-main').style.left       = (global.selectedTextPosition.leftCenter-150)+"px";
 
-            // Check if there is enough room above the selected text for the speech bubble
-            if (window.scrollY < (global.selectedTextPosition.top - bubbleHeight - 15)) {
+            if (forceDirectionDown===false || typeof(forceDirectionDown)==='undefined' &&
+                    // Check if there is enough room above the selected text for the speech bubble
+                    window.scrollY < (global.selectedTextPosition.top - bubbleHeight - 15))
+            {
                 global.isTextBubbleAboveSelectedText = true;
                 setInnerOuterTailDirection("annotation-tail", "up", "down");
                 document.getElementById('annotation-tail-main').style.top  = (global.selectedTextPosition.top-14)+"px";
@@ -147,7 +152,7 @@
         setAnnotationBubblePosition();
     };
 
-    function showExampleBubble() {
+    function showExampleBubble(isSecondAttempt) {
 
         // Display example block and set text in order to calculate height correctly
         document.getElementById('axon-example-container').className = "";
@@ -160,16 +165,27 @@
 
         var annotationBubbleHeight = document.getElementById('annotation-main').offsetHeight;
         var exampleBubbleHeight = document.getElementById('example-main').offsetHeight;
-
         var canExampleFitNextToAnnotation = false;
 
         if (typeof global.selectedTextPosition!=="undefined") {
 
             var mainOffset = 0;
             var tailOffset = 0;
+
             if (global.isTextBubbleAboveSelectedText) {
+
                 mainOffset = -(annotationBubbleHeight/2)-(exampleBubbleHeight/2)-14;
                 tailOffset = -annotationBubbleHeight/2-25;
+
+                // If there is no room for the example above the selected text then try
+                // to reposition the definition bubble (once).
+                if ((typeof(isSecondAttempt)==="undefined" || isSecondAttempt===false) && 
+                    window.scrollY > (global.selectedTextPosition.top + mainOffset))
+                {
+                    setAnnotationBubblePosition(true/*force direction down*/);
+                    showExampleBubble(true);
+                    return;
+                }
             }
             else {
                 mainOffset = +(annotationBubbleHeight-exampleBubbleHeight)/2+28;
@@ -207,22 +223,24 @@
 
         if (!isEmpty(examplesResponse)) {
 
-            // Random number between 0 and length of examples
-            var randomNumber = Math.floor(Math.random()*examplesResponse.examples.length);
+            // Pick a random example
+            var randomNumber = Math.floor(Math.random()*(examplesResponse.examples.length-1));
             var randomExample = examplesResponse.examples[randomNumber];
 
             // Change font weight of all occurrences of searchword to bold in the random example text.
-            // The searchword may not be surrounded by letters or numbers (i.e. contained in another word).
-            var canonicalWordRegExp = new RegExp("(^|[^A-za-z0-9]+)("+global.dictionaryData.title+")([^A-za-z0-9]+|$)","gi");
+            // The searchword should not be surrounded by letters or numbers (i.e. contained in another word).
+            // Example:
+            //   global.selectedTextString = 'diagnoses'  -- the selected text
+            //   global.dictionaryData.title = 'diagnose' or 'diagnosis' -- can be Wordnik canonical / Wikipedia redirect / Wikipedia suggestion
             var selectedWordRegExp  = new RegExp("(^|[^A-za-z0-9]+)("+global.selectedTextString+")([^A-za-z0-9]+|$)","gi");
-            var selectedWordRegExp  = new RegExp("(^|[^A-za-z0-9]+)("+randomExample.word+")([^A-za-z0-9]+|$)","gi");
+            var canonicalWordRegExp = new RegExp("(^|[^A-za-z0-9]+)("+global.dictionaryData.title+")([^A-za-z0-9]+|$)","gi");
 
             var randomExampleText = randomExample.text;
-            randomExampleText = randomExampleText.replace(canonicalWordRegExp, "$1<span class='boldItalic'>$2</span>$3");
             randomExampleText = randomExampleText.replace(selectedWordRegExp, "$1<span class='boldItalic'>$2</span>$3");
+            randomExampleText = randomExampleText.replace(canonicalWordRegExp, "$1<span class='boldItalic'>$2</span>$3");
             global.dictionaryData.exampleText = randomExampleText;
 
-            global.dictionaryData.exampleTitle = randomExample.title;
+            global.dictionaryData.exampleTitle = toLowerCaseIfNotAnAbbreviation(randomExample.title);
             global.dictionaryData.exampleURL = randomExample.url;
             showExampleBubble();
         }
@@ -238,7 +256,7 @@
     }
 
     function getLanguageCode() {
-        var languageCode = defaultLanguageCode;
+        var languageCode = ENGLISH_LANGUAGE_CODE;
         if (global.dictionaryData.source === "wikipedia") {
             languageCode = global.config.wikipediaLanguageCode;
         }
@@ -363,7 +381,11 @@
 
     self.port.on("errorListener", function(response) {
         var errorContainer = JSON.parse(response);
-        alert(errorContainer.error);
+        initializeDictionaryData();
+        global.dictionaryData.definitionText = "<b>"+errorContainer.title+"</b><div style='margin:5px 0;'></div>";
+        global.dictionaryData.definitionText += errorContainer.error;
+        showAnnotationBubble();
+        global.mustCancelOperations = true;
     });
 
     self.port.on("wikipediaSuggestionListener", function(response) {
@@ -376,7 +398,7 @@
             var suggestion = response.query.searchinfo.suggestion;
 
             if (typeof suggestion==='undefined') {
-                // If a found Wikipedia title occurs in the selectedTextString
+                // If the first found Wikipedia title occurs in selectedTextString
                 // (e.g. singular part of plural) then use this title.
                 if (response.query.search.length>0 &&
                         global.selectedTextString.toLowerCase().indexOf(response.query.search[0].title.toLowerCase())!==-1) 
@@ -409,7 +431,7 @@
 
     function getPronunciation() {
 
-        if (getLanguageCode() === defaultLanguageCode) {
+        if (getLanguageCode() === ENGLISH_LANGUAGE_CODE) {
             self.port.emit("sendGetRequest", {
                 type       : "wordnikAudio",
                 keyword    : global.dictionaryData.title,
@@ -427,10 +449,10 @@
     }
 
     function showNoDefinitionFound() {
-        var wikipediaURL = wikipediaSpecialSearchURL.replace(/{LANGUAGECODE}/, global.config.wikipediaLanguageCode);
+        var wikipediaURL = WIKIPEDIA_SPECIAL_SEARCH_URL.replace(/{LANGUAGECODE}/, global.config.wikipediaLanguageCode);
         wikipediaURL += global.selectedTextString;
-        var wikipediaDomain = global.config.wikipediaLanguageCode + noDefinitionFoundWikiZone;
-        global.dictionaryData.definitionText = noDefinitionFoundText + "<a href='"+wikipediaURL+"' target='_blank'>"+wikipediaDomain+"</a>";
+        var wikipediaDomain = global.config.wikipediaLanguageCode + NO_DEFINITION_FOUND_WIKI_ZONE;
+        global.dictionaryData.definitionText = NO_DEFINITION_FOUND_TEXT + "<a href='"+wikipediaURL+"' target='_blank'>"+wikipediaDomain+"</a>";
         showAnnotationBubble();
     }
 
@@ -465,7 +487,7 @@
                 global.suggestedTextString = "";
 
                 var page = definitionResponse.query.pages[pageKey];
-                global.dictionaryData.title = page.title.toLowerCase();
+                global.dictionaryData.title = toLowerCaseIfNotAnAbbreviation(page.title);
                 global.dictionaryData.definitionText = filterDefinitionText(page.extract);
                 global.dictionaryData.source = "wikipedia";
 
@@ -476,6 +498,12 @@
         }
     });
 
+    function toLowerCaseIfNotAnAbbreviation(string) {
+        if (string===string.toUpperCase())
+            return string;
+        return string.toLowerCase();
+    }
+
     self.port.on("definitionListener", function(definitionResponse) {
 
         if (global.mustCancelOperations === true) return;
@@ -483,7 +511,10 @@
 
         if (!isEmpty(definitionResponse)) {
 
-            global.dictionaryData.title = definitionResponse[0].word;
+            // Reset suggestion
+            global.suggestedTextString = "";
+
+            global.dictionaryData.title = toLowerCaseIfNotAnAbbreviation(definitionResponse[0].word);
             global.dictionaryData.definitionText = filterDefinitionText(definitionResponse[0].text);
             global.dictionaryData.source = "wordnik";
 
@@ -498,7 +529,7 @@
 
             self.port.emit("sendGetRequest", {
                 type         : "wikipediaExtract",
-                keyword      : global.selectedTextString,
+                keyword      : global.suggestedTextString || global.selectedTextString,
                 languageCode : global.config.wikipediaLanguageCode,
                 onComplete   : "wikipediaExtractListener"
             });
@@ -665,11 +696,11 @@
         // Remove punctuation
         text = text.replace(/['!"#$%&\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
 
-        // If multiple words were selected use the first
+        // If multiple words were selected in one Range use the first
         text = text.replace(/^([A-z]*)(\s+|$).*/,"$1");
 
         // Change the text to lower case and return it
-        return text.toLowerCase();
+        return toLowerCaseIfNotAnAbbreviation(text);
     }
 
     function getWordnikOrWikipediaEntry() {
@@ -692,6 +723,17 @@
         }
     }
 
+    /* Initialize dictionaryData. Holds data fetched from external resources (Wordnik/Wikipedia). */
+    function initializeDictionaryData() {
+        global.dictionaryData.title          = "";
+        global.dictionaryData.definitionText = "";
+        global.dictionaryData.exampleTitle   = "";
+        global.dictionaryData.exampleText    = "";
+        global.dictionaryData.exampleURL     = "";
+        global.dictionaryData.audioFileURL   = "";
+        global.dictionaryData.source         = "";
+    }
+
     /* 
      * configAndTemplateListener receives template.html and css from the add-on data
      * folder, inserts the template into the body of the current document, and calls
@@ -707,38 +749,44 @@
         }
 
         /* Wikipedia */
-        global.config.wikipediaLanguageCode = global.wasCtrlPressed ? data.immediateLookupWikipediaLanguageCode : data.mainWikipediaLanguageCode;
-        global.config.isWikipediaOnlyEnabled = data.isWikipediaOnlyEnabled || global.wasCtrlPressed;
+        global.config.wikipediaLanguageCode = wasHotkeyPressed(data.hotkey) ? data.immediateLookupWikipediaLanguageCode : data.mainWikipediaLanguageCode;
+        global.config.isWikipediaOnlyEnabled = data.isWikipediaOnlyEnabled || wasHotkeyPressed(data.hotkey);
 
         /* Show a random example next to every word */
         global.config.isRandomExampleEnabled = data.isRandomExampleEnabled;
 
-        /* Initialize dictionaryData. Holds data fetched from external resources (Wordnik/Wikipedia). */
-        global.dictionaryData.title          = "";
-        global.dictionaryData.definitionText = "Searching...";
-        global.dictionaryData.exampleTitle   = "";
-        global.dictionaryData.exampleText    = "";
-        global.dictionaryData.exampleURL     = "";
-        global.dictionaryData.audioFileURL   = "";
-        global.dictionaryData.source         = "";
+        initializeDictionaryData();
+        global.dictionaryData.definitionText = START_OF_SEARCH_TEXT;
         showAnnotationBubble();
         getWordnikOrWikipediaEntry();
     });
 
+    function wasHotkeyPressed(hotkey) {
+        return (global.modifierKeyPressedString===hotkey);
+    }
+
+    function getModifierKeyFromDoubleClickEvent(e) {
+        var keyPressed = "none";
+        Object.keys(MODIFIER_KEYS).forEach(function(key) {
+            if (e[MODIFIER_KEYS[key]]) keyPressed = key;
+        });
+        return keyPressed;
+    }
+
     var htmlElement = document.getElementsByTagName('html')[0];
-    if (typeof htmlElement!=="undefined")
+    if (typeof htmlElement!=="undefined") {
         htmlElement.addEventListener("keydown", function(e) {
 
             if (global.isTemplateLoaded) {
 
                 e.stopPropagation();
-
                 // ESCAPE key pressed
                 if (e.keyCode == 27) {
                     closeTextBubblesAndCancelOperations();
                 }
             }
         });
+    }
 
     window.addEventListener("click", function(e) {
         if (e.which===1) { // left mouse button
@@ -776,10 +824,10 @@
 
          global.mustCancelOperations = false;
          global.selectedTextPosition = selectedTextPosition;
-         global.wasCtrlPressed = e.ctrlKey;
+         global.modifierKeyPressedString = getModifierKeyFromDoubleClickEvent(e);
 
          /* Request templates from add-on data folder */
-         self.port.emit("getConfigAndTemplate", {
+         self.port.emit("getConfigurationAndTemplate", {
              onComplete    : "configAndTemplateListener"
          });
     }, true);
