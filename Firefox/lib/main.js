@@ -73,6 +73,14 @@ function getWiktionaryURL(wiktionaryLanguageCode, word, parameters) {
     return url;
 }
 
+function getWikipediaSuggestionURL(wikipediaLanguageCode, word, parameters) {
+    var url = "";
+    url += wikipediaAPIBaseURL.replace(/{LANGUAGECODE}/, wikipediaLanguageCode);
+    url += parameters;
+    url += "&srsearch="+word;
+    return url;
+}
+
 function getWikimediaURL(fileName, parameters) {
     var url="";
     url += wikimediaAPIBaseURL;
@@ -124,25 +132,32 @@ PageMod.PageMod({
             switch(response.type) {
                 case "wordnikDefinitions":
                     url = getWordnikURL(searchKeyword, "/definitions?limit=1&includeRelated=true&useCanonical=true&includeTags=false");
-                break;
+                    break;
                 case "wordnikAudio":
                     url = getWordnikURL(searchKeyword, "/audio?useCanonical=true&limit=50");
                     break;
                 case "wordnikTopExample"://unused
                     url = getWordnikURL(searchKeyword, "/topExample?useCanonical=true");
-                break;
+                    break;
                 case "wordnikExamples":
                     url = getWordnikURL(searchKeyword, "/examples?includeDuplicates=false&useCanonical=true&skip=0&limit=25");
-                break;
+                    break;
                 case "wiktionaryAudio":
                     url = getWiktionaryURL(response.languageCode, searchKeyword, "action=query&prop=images&format=json&redirects=&continue=");
-                break;
+                    break;
                 case "wiktionaryAudioFileURL":
                     url = getWikimediaURL(searchKeyword, "action=query&prop=imageinfo&iiprop=url&format=json&continue=");
-                break;
+                    break;
                 case "wikipediaExtract":
                     url = getWikipediaURL(response.languageCode, searchKeyword, "action=query&prop=extracts&format=json&exchars=350&redirects=&continue=");
-                break;
+                    break;
+                case "wikipediaSuggestion":
+                    url = getWikipediaSuggestionURL(response.languageCode, searchKeyword, "action=query&srnamespace=0&srprop=sectiontitle&list=search&format=json&srlimit=1&continue=");
+                    break;
+                default:
+                    var version = Self.version;
+                    worker.port.emit("errorListener", JSON.stringify({"error":"Axon v"+version+" Firefox add-on error: Request type "+response.type+" not found."}));
+                    break;
             }
 
             Request.Request({

@@ -1,3 +1,8 @@
+04-feb-2015
+   Version 0.3
+        - New functionality: if a Wikipedia entry could not be found
+          a suggestion is requested and fetched from Wikipedia.
+
 03-feb-2015
    Version 0.2
         - Axon now loads a Wiktionary pronunciation audio file if no Wordnik

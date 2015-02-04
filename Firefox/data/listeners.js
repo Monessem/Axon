@@ -27,6 +27,7 @@
     global.selectedTextPosition          = null;  // bounding dimensions of selected text
     global.originalSelectedTextString    = "";    // unfiltered selected text
     global.selectedTextString            = "";    // filtered selected text
+    global.suggestedTextString           = "";    // Wikipedia suggested correction to selectedTextString
     global.isTextBubbleAboveSelectedText = true;  // whereabouts of definition speech bubble to correctly position example text
     global.isTemplateLoaded              = false; // prevents loading template multiple times
     global.mustCancelOperations          = false; // cancel calls in process after esc, close button, or clicking next to the speech bubbles
@@ -41,7 +42,7 @@
     const defaultLanguageCode       = "en";
 
     // Function from jQuery JavaScript Library v1.11.2
-    function isEmptyObject( obj ) {
+    function isEmpty( obj ) {
         var name;
         for ( name in obj ) {
             return false;
@@ -204,16 +205,17 @@
         if (global.mustCancelOperations === true) return;
         examplesResponse = JSON.parse(examplesResponse);
 
-        if (!isEmptyObject(examplesResponse)) {
+        if (!isEmpty(examplesResponse)) {
 
             // Random number between 0 and length of examples
             var randomNumber = Math.floor(Math.random()*examplesResponse.examples.length);
             var randomExample = examplesResponse.examples[randomNumber];
 
             // Change font weight of all occurrences of searchword to bold in the random example text.
-            // The searchword may not be surrounded by letters or numbers.
+            // The searchword may not be surrounded by letters or numbers (i.e. contained in another word).
             var canonicalWordRegExp = new RegExp("(^|[^A-za-z0-9]+)("+global.dictionaryData.title+")([^A-za-z0-9]+|$)","gi");
             var selectedWordRegExp  = new RegExp("(^|[^A-za-z0-9]+)("+global.selectedTextString+")([^A-za-z0-9]+|$)","gi");
+            var selectedWordRegExp  = new RegExp("(^|[^A-za-z0-9]+)("+randomExample.word+")([^A-za-z0-9]+|$)","gi");
 
             var randomExampleText = randomExample.text;
             randomExampleText = randomExampleText.replace(canonicalWordRegExp, "$1<span class='boldItalic'>$2</span>$3");
@@ -359,47 +361,41 @@
         return text;
     }
 
-    self.port.on("wikipediaExtractListener", function(definitionResponse) {
+    self.port.on("errorListener", function(response) {
+        var errorContainer = JSON.parse(response);
+        alert(errorContainer.error);
+    });
+
+    self.port.on("wikipediaSuggestionListener", function(response) {
 
         if (global.mustCancelOperations === true) return;
-        definitionResponse = JSON.parse(definitionResponse);
+        var response = JSON.parse(response);
 
-        if (!isEmptyObject(definitionResponse)) {
+        if (!isEmpty(response)) {
 
-            var pageKey = Object.keys(definitionResponse.query.pages)[0];
+            var suggestion = response.query.searchinfo.suggestion;
 
-            if (pageKey==="-1") {
-                var wikipediaURL = wikipediaSpecialSearchURL.replace(/{LANGUAGECODE}/, global.config.wikipediaLanguageCode);
-                wikipediaURL += global.selectedTextString;
-                var wikipediaDomain = global.config.wikipediaLanguageCode + noDefinitionFoundWikiZone;
-                global.dictionaryData.definitionText = noDefinitionFoundText + "<a href="+wikipediaURL+">"+wikipediaDomain+"</a>";
-
+            if (typeof suggestion==='undefined') {
+                // If a found Wikipedia title occurs in the selectedTextString
+                // (e.g. singular part of plural) then use this title.
+                if (response.query.search.length>0 &&
+                        global.selectedTextString.toLowerCase().indexOf(response.query.search[0].title.toLowerCase())!==-1) 
+                {
+                    global.suggestedTextString = response.query.search[0].title;
+                }
             }
             else {
-                var page = definitionResponse.query.pages[pageKey];
-                global.dictionaryData.title = page.title.toLowerCase();
-                global.dictionaryData.definitionText = filterDefinitionText(page.extract);
-                global.dictionaryData.source = "wikipedia";
+                global.suggestedTextString = suggestion;
             }
 
-            showAnnotationBubble();
-
-            if (getLanguageCode() === defaultLanguageCode) {
-                self.port.emit("sendGetRequest", {
-                    type       : "wordnikAudio",
-                    keyword    : global.dictionaryData.title,
-                    onComplete : "wordnikAudioListener"
-                });
+            if (isEmpty(global.suggestedTextString)) {
+                showNoDefinitionFound();
             }
-            else { 
-                self.port.emit("sendGetRequest", {
-                    type         : "wiktionaryAudio",
-                    keyword      : global.dictionaryData.title,
-                    languageCode : global.config.wikipediaLanguageCode,
-                    onComplete   : "wiktionaryAudioListener"
-                });
-            }
+            else getWordnikOrWikipediaEntry();
         }
+    });
+
+    function getRandomExampleIfEnabled() {
 
         if (global.config.isRandomExampleEnabled) {
 
@@ -409,6 +405,75 @@
                 onComplete : "wordnikExamplesListener"
             });
         }
+    }
+
+    function getPronunciation() {
+
+        if (getLanguageCode() === defaultLanguageCode) {
+            self.port.emit("sendGetRequest", {
+                type       : "wordnikAudio",
+                keyword    : global.dictionaryData.title,
+                onComplete : "wordnikAudioListener"
+            });
+        }
+        else { 
+            self.port.emit("sendGetRequest", {
+                type         : "wiktionaryAudio",
+                keyword      : global.dictionaryData.title,
+                languageCode : global.config.wikipediaLanguageCode,
+                onComplete   : "wiktionaryAudioListener"
+            });
+        }
+    }
+
+    function showNoDefinitionFound() {
+        var wikipediaURL = wikipediaSpecialSearchURL.replace(/{LANGUAGECODE}/, global.config.wikipediaLanguageCode);
+        wikipediaURL += global.selectedTextString;
+        var wikipediaDomain = global.config.wikipediaLanguageCode + noDefinitionFoundWikiZone;
+        global.dictionaryData.definitionText = noDefinitionFoundText + "<a href='"+wikipediaURL+"' target='_blank'>"+wikipediaDomain+"</a>";
+        showAnnotationBubble();
+    }
+
+    self.port.on("wikipediaExtractListener", function(definitionResponse) {
+
+        if (global.mustCancelOperations === true) return;
+        definitionResponse = JSON.parse(definitionResponse);
+
+        if (!isEmpty(definitionResponse)) {
+
+            var pageKey = Object.keys(definitionResponse.query.pages)[0];
+
+            if (pageKey==="-1") {
+
+                // If no suggestion has been tried, search for suggestion
+                if (global.suggestedTextString==="") {
+                    self.port.emit("sendGetRequest", {
+                        type         : "wikipediaSuggestion",
+                        keyword      : global.selectedTextString,
+                        languageCode : global.config.wikipediaLanguageCode,
+                        onComplete   : "wikipediaSuggestionListener"
+                    });
+                }
+                else {
+                    // Reset suggestion. Otherwise infinite loop.
+                    global.suggestedTextString = "";
+                    showNoDefinitionFound();
+                }
+            }
+            else {
+                // Reset suggestion. Otherwise infinite loop.
+                global.suggestedTextString = "";
+
+                var page = definitionResponse.query.pages[pageKey];
+                global.dictionaryData.title = page.title.toLowerCase();
+                global.dictionaryData.definitionText = filterDefinitionText(page.extract);
+                global.dictionaryData.source = "wikipedia";
+
+                showAnnotationBubble();
+                getPronunciation();
+                getRandomExampleIfEnabled();
+            }
+        }
     });
 
     self.port.on("definitionListener", function(definitionResponse) {
@@ -416,28 +481,18 @@
         if (global.mustCancelOperations === true) return;
         definitionResponse = JSON.parse(definitionResponse);
 
-        if (!isEmptyObject(definitionResponse)) {
+        if (!isEmpty(definitionResponse)) {
 
             global.dictionaryData.title = definitionResponse[0].word;
             global.dictionaryData.definitionText = filterDefinitionText(definitionResponse[0].text);
             global.dictionaryData.source = "wordnik";
 
             showAnnotationBubble();
+            getPronunciation();
 
-            if (global.config.isRandomExampleEnabled) {
-
-                self.port.emit("sendGetRequest", {
-                    type       : "wordnikExamples",
-                    keyword    : global.selectedTextString,
-                    onComplete : "wordnikExamplesListener"
-                });
-            }
-
-            self.port.emit("sendGetRequest", {
-                type       : "wordnikAudio",
-                keyword    : global.dictionaryData.title,
-                onComplete : "wordnikAudioListener"
-            });
+            // After the size of the definition bubble is known,
+            // position the example bubble relative to it.
+            getRandomExampleIfEnabled();
         }
         else {
 
@@ -617,6 +672,26 @@
         return text.toLowerCase();
     }
 
+    function getWordnikOrWikipediaEntry() {
+
+        if (global.config.isWikipediaOnlyEnabled) {
+
+            self.port.emit("sendGetRequest", {
+                type         : "wikipediaExtract",
+                keyword      : global.suggestedTextString || global.selectedTextString,
+                languageCode : global.config.wikipediaLanguageCode,
+                onComplete   : "wikipediaExtractListener"
+            });
+        }
+        else {
+            self.port.emit("sendGetRequest", {
+                type       : "wordnikDefinitions",
+                keyword    : global.suggestedTextString || global.selectedTextString,
+                onComplete : "definitionListener"
+            });
+        }
+    }
+
     /* 
      * configAndTemplateListener receives template.html and css from the add-on data
      * folder, inserts the template into the body of the current document, and calls
@@ -647,23 +722,7 @@
         global.dictionaryData.audioFileURL   = "";
         global.dictionaryData.source         = "";
         showAnnotationBubble();
-
-        if (global.config.isWikipediaOnlyEnabled) {
-
-            self.port.emit("sendGetRequest", {
-                type         : "wikipediaExtract",
-                keyword      : global.selectedTextString,
-                languageCode : global.config.wikipediaLanguageCode,
-                onComplete   : "wikipediaExtractListener"
-            });
-        }
-        else {
-            self.port.emit("sendGetRequest", {
-                type       : "wordnikDefinitions",
-                keyword    : global.selectedTextString,
-                onComplete : "definitionListener"
-            });
-        }
+        getWordnikOrWikipediaEntry();
     });
 
     var htmlElement = document.getElementsByTagName('html')[0];
