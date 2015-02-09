@@ -38,6 +38,7 @@
     const WIKIPEDIA_SPECIAL_SEARCH_URL  = "https://{LANGUAGECODE}.wikipedia.org/wiki/Special:Search/";
     const GOOGLE_DEFINE_URL             = "https://www.google.com/search?hl=en&q=define+"
     const GOOGLE_NORMAL_URL             = "https://www.google.com/search?q="
+
     const START_OF_SEARCH_TEXT          = "Searching...";
     const NO_DEFINITION_FOUND_TEXT      = "No definition found on ";
     const NO_DEFINITION_FOUND_WIKI_ZONE = ".wikipedia.org";
@@ -374,7 +375,6 @@
             if (c==="<") inTag=true;
             if (!inTag) ++count;
             if (c===">") inTag=false;
-            if (c===">") inTag=false;
             isSpace = (c===" ");
 
             if (count>=maxNrOfCharacters && !inTag && isSpace) {
@@ -401,12 +401,12 @@
     }
 
     self.port.on("errorListener", function(response) {
+        global.mustCancelOperations = true;
         var errorContainer = JSON.parse(response);
         initializeDictionaryData();
         global.dictionaryData.definitionText = "<b>"+errorContainer.title+"</b><div style='margin:5px 0;'></div>";
         global.dictionaryData.definitionText += errorContainer.error;
         showAnnotationBubble();
-        global.mustCancelOperations = true;
     });
 
     self.port.on("wikipediaSuggestionListener", function(response) {
@@ -483,12 +483,12 @@
         return (code >=65 && code <= 90) || (code >=97 && code <= 122);
     }
 
-    // Check if Wikipedia {{Lowercase title}} should be applied.
+    // Check if Wikipedia tag {{Lowercase title}} might be present.
     // Required for: eBay, iPhone, etc.
-    function shouldFirstLetterBeLowerCase(title) {
+    function areFirstTwoLettersUppercase(title) {
 
         if (title.length<3) return false;
-        var shouldFirstLetterBeLowerCase = true;
+        var areFirstTwoLettersUppercase = true;
         var c='', i=0;
         var code = 0;
 
@@ -501,16 +501,27 @@
         // See also: http://www.adherecreative.com/blog/bid/181249/The-Case-for-Lower-Case-A-Rebranding-Conundrum
         while (c=title[i++]) {
             code = c.charCodeAt(0);
-            if ( i>2 && c===" " ) return shouldFirstLetterBeLowerCase;
+            if ( i>2 && c===" " ) return areFirstTwoLettersUppercase;
             if ( i==1 && c!==c.toUpperCase() || !isCharacterLetter(c) )
-                shouldFirstLetterBeLowerCase = false;
+                areFirstTwoLettersUppercase = false;
             if ( i==2 && c!==c.toUpperCase() || !isCharacterLetter(c) )
-                shouldFirstLetterBeLowerCase = false;
+                areFirstTwoLettersUppercase = false;
             if ( i>2 && c!==c.toLowerCase() || !isCharacterLetter(c) )
-                shouldFirstLetterBeLowerCase = false;
+                areFirstTwoLettersUppercase = false;
         }
-        return shouldFirstLetterBeLowerCase;
+        return areFirstTwoLettersUppercase;
     }
+
+    self.port.on("wikipediaParsedPageDisplayTitleListener", function(response) {
+
+        if (global.mustCancelOperations === true) return;
+        response = JSON.parse(response);
+        global.dictionaryData.title = response.parse.displaytitle;
+
+        showAnnotationBubble();
+        getPronunciation();
+        getRandomExampleIfEnabled();
+    });
 
     self.port.on("wikipediaExtractListener", function(definitionResponse) {
 
@@ -545,17 +556,27 @@
                 var page = definitionResponse.query.pages[pageKey];
                 var title = page.title;
 
-                if (title.length>1 && shouldFirstLetterBeLowerCase(title)) {
-                    title = title[0].toLowerCase() + title.substring(1);
-                }
-
                 global.dictionaryData.title = title;
                 global.dictionaryData.definitionText = filterDefinitionText(page.extract);
                 global.dictionaryData.source = "wikipedia";
 
-                showAnnotationBubble();
-                getPronunciation();
-                getRandomExampleIfEnabled();
+                // Check if title has first two letters capitalized.
+                // E.g. EBay, IPhone, etc.
+                if (title.length>2 && areFirstTwoLettersUppercase(title)) {
+
+                    // Fetch the actual display title from Wikipedia
+                    self.port.emit("sendGetRequest", {
+                        type         : "wikipediaParsedPageDisplayTitle",
+                        keyword      : title,
+                        languageCode : global.config.wikipediaLanguageCode,
+                        onComplete   : "wikipediaParsedPageDisplayTitleListener"
+                    });
+                }
+                else {
+                    showAnnotationBubble();
+                    getPronunciation();
+                    getRandomExampleIfEnabled();
+                }
             }
         }
     });

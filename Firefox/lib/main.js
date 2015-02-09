@@ -31,11 +31,11 @@ const NetXHR      = require("sdk/net/xhr");
 const {Cu}        = require('chrome');
 const {Services}  = Cu.import('resource://gre/modules/Services.jsm');
 
-const WORDNIK_API_BASE_URL    = "http://api.wordnik.com:80/v4/word.json/";
-const WIKIPEDIA_API_BASE_URL  = "https://{LANGUAGECODE}.wikipedia.org/w/api.php?";
-const WIKTIONARY_API_BASE_URL = "https://{LANGUAGECODE}.wiktionary.org/w/api.php?";
-const WORDNIK_API_KEY         = "a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5";
-const WIKIMEDIA_API_BASE_URL  = "https://commons.wikimedia.org/w/api.php?";
+const API_URL_WORDNIK    = "http://api.wordnik.com:80/v4/word.json/";
+const API_KEY_WORDNIK    = "a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5";
+const API_URL_WIKIMEDIA  = "https://commons.wikimedia.org/w/api.php?";
+const API_URL_WIKIPEDIA  = "https://{LANGUAGECODE}.wikipedia.org/w/api.php?";
+const API_URL_WIKTIONARY = "https://{LANGUAGECODE}.wiktionary.org/w/api.php?";
 
 var button = Buttons.ActionButton({
     id: "mozilla-link",
@@ -50,44 +50,51 @@ var button = Buttons.ActionButton({
     }
 });
 
-function getWordnikURL(word, parameters) {
+function getWordnikURL(word, path, parameters) {
     var url = "";
-    url += WORDNIK_API_BASE_URL+word;
-    url += parameters;
-    url += "&api_key="+WORDNIK_API_KEY;
+    url += API_URL_WORDNIK+word+path;
+    url += "?"+parameters.join("&");
+    url += "&api_key="+API_KEY_WORDNIK;
     return url;
 }
 
-function getWikipediaURL(wikipediaLanguageCode, word, parameters) {
-    var url = "";
-    url += WIKIPEDIA_API_BASE_URL.replace(/{LANGUAGECODE}/, wikipediaLanguageCode);
-    url += parameters;
-    url += "&titles="+word;
-    return url;
-}
-
-function getWiktionaryURL(wiktionaryLanguageCode, word, parameters) {
+function getWikiURL(URL, wiktionaryLanguageCode, parameters) {
     var url="";
-    url += WIKTIONARY_API_BASE_URL.replace(/{LANGUAGECODE}/, wiktionaryLanguageCode);
-    url += parameters;
-    url += "&titles="+word;
+    url += URL.replace(/{LANGUAGECODE}/, wiktionaryLanguageCode);
+    url += parameters.join("&");
     return url;
 }
 
-function getWikipediaSuggestionURL(wikipediaLanguageCode, word, parameters) {
-    var url = "";
-    url += WIKIPEDIA_API_BASE_URL.replace(/{LANGUAGECODE}/, wikipediaLanguageCode);
-    url += parameters;
-    url += "&srsearch="+word;
-    return url;
-}
+function sendXHRrequest(worker, url, commonResourceName, getRequest) {
 
-function getWikimediaURL(fileName, parameters) {
-    var url="";
-    url += WIKIMEDIA_API_BASE_URL;
-    url += parameters;
-    url += "&titles="+fileName;
-    return url;
+    var xhr = new NetXHR.XMLHttpRequest();
+    xhr.timeout = SimplePrefs.prefs.axonMaximumWaitTime;
+    xhr.overrideMimeType("text/plain; charset=x-user-defined");
+
+    xhr.onload = function() {
+        if (xhr.status===200) {
+            worker.port.emit(getRequest.onComplete, JSON.stringify(xhr.response));
+        }
+        else {
+            worker.port.emit("errorListener", JSON.stringify({
+                "error" : "Unhandled exception: "+commonResourceName+" API call "+
+                          "returned with HTTP status: "+xhr.status+" "+xhr.statusText+".",
+                "title" : "Axon v"+Self.version+" error"
+            }));
+        }
+    }
+
+    xhr.ontimeout = function() {
+        worker.port.emit("errorListener", JSON.stringify({
+            "error" : "<p>Request for '"+commonResourceName+"' took longer than the maximum of "+(SimplePrefs.prefs.axonMaximumWaitTime/1000)+" seconds."+
+                      "</p><p style='margin-top:10px'>Please try again later, or increase preference <i>axonMaximumWaitTime</i> in <a href='http://kb.mozillazine.org/About:config'>about:config</a>.</p>",
+            "title" : "Axon v"+Self.version+" error"
+        }));
+    }
+
+    xhr.open("GET", url, true);
+    xhr.responseType = "json";
+    xhr.send();
 }
 
 // Only need to attach listeners.js when Firefox starts with tabs
@@ -133,71 +140,100 @@ PageMod.PageMod({
             var url = "";
 
             switch(getRequest.type) {
+
                 case "wordnikDefinitions":
                     commonResourceName = "Wordnik definition";
-                    url = getWordnikURL(searchKeyword, "/definitions?limit=1&includeRelated=true&useCanonical=true&includeTags=false");
+                    url = getWordnikURL(searchKeyword, "/definitions",
+                            ["limit=1",
+                             "includeRelated=true",
+                             "useCanonical=true",
+                             "includeTags=false"]);
                     break;
+
                 case "wordnikAudio":
                     commonResourceName = "Wordnik audio";
-                    url = getWordnikURL(searchKeyword, "/audio?useCanonical=true&limit=50");
+                    url = getWordnikURL(searchKeyword, "/audio",
+                            ["useCanonical=true",
+                             "limit=50"]);
                     break;
+
                 case "wordnikTopExample"://unused
                     commonResourceName = "Wordnik top example";
-                    url = getWordnikURL(searchKeyword, "/topExample?useCanonical=true");
+                    url = getWordnikURL(searchKeyword, "/topExample",
+                            ["useCanonical=true"]);
                     break;
+
                 case "wordnikExamples":
                     commonResourceName = "Wordnik example";
-                    url = getWordnikURL(searchKeyword, "/examples?includeDuplicates=false&useCanonical=true&skip=0&limit=25");
+                    url = getWordnikURL(searchKeyword, "/examples",
+                            ["includeDuplicates=false",
+                             "useCanonical=true",
+                             "skip=0",
+                             "limit=25"]);
                     break;
+
                 case "wiktionaryAudio":
                     commonResourceName = "Wiktionary pronunciation file request";
-                    url = getWiktionaryURL(getRequest.languageCode, searchKeyword, "action=query&prop=images&format=json&redirects=&continue=");
+                    url = getWikiURL(API_URL_WIKTIONARY, getRequest.languageCode,
+                            ["action=query",
+                             "prop=images",
+                             "format=json",
+                             "redirects=",
+                             "continue=",
+                             "titles="+searchKeyword]);
                     break;
+
                 case "wiktionaryAudioFileURL":
                     commonResourceName = "Wiktionary audio filename";
-                    url = getWikimediaURL(searchKeyword, "action=query&prop=imageinfo&iiprop=url&format=json&continue=");
+                    url = getWikiURL(API_URL_WIKIMEDIA, getRequest.languageCode,
+                            ["action=query", 
+                             "prop=imageinfo", 
+                             "iiprop=url", 
+                             "format=json", 
+                             "continue=", 
+                             "titles="+searchKeyword]);
                     break;
+
                 case "wikipediaExtract":
                     commonResourceName = "Wikipedia extract";
-                    url = getWikipediaURL(getRequest.languageCode, searchKeyword, "action=query&prop=extracts&format=json&exchars=4096&redirects=&continue=");
+                    url = getWikiURL(API_URL_WIKIPEDIA, getRequest.languageCode,
+                            ["action=query",
+                             "prop=extracts",
+                             "format=json",
+                             "exchars=2048",
+                             "redirects=",
+                             "continue=",
+                             "titles="+searchKeyword]);
                     break;
+
+                case "wikipediaParsedPageDisplayTitle":
+                    commonResourceName = "Wikipedia parsed display title";
+                    url = getWikiURL(API_URL_WIKIPEDIA, getRequest.languageCode,
+                            ["action=parse",
+                             "prop=displaytitle",
+                             "format=json",
+                             "page="+searchKeyword]);
+                    break;
+
                 case "wikipediaSuggestion":
                     commonResourceName = "Wikipedia suggestion";
-                    url = getWikipediaSuggestionURL(getRequest.languageCode, searchKeyword, "action=query&srnamespace=0&srprop=sectiontitle&list=search&format=json&srlimit=1&continue=");
+                    url = getWikiURL(API_URL_WIKIPEDIA, getRequest.languageCode, 
+                            ["action=query",
+                             "srnamespace=0",
+                             "srprop=sectiontitle",
+                             "list=search",
+                             "format=json",
+                             "srlimit=1",
+                             "continue=",
+                             "srsearch="+searchKeyword]);
                     break;
+
                 default:
                     worker.port.emit("errorListener", getErrorAsJsonString("getRequest type "+getRequest.type+" not found."));
                     break;
             }
 
-            var request = new NetXHR.XMLHttpRequest();
-            request.timeout = SimplePrefs.prefs.axonMaximumWaitTime;
-            request.overrideMimeType("text/plain; charset=x-user-defined");
-
-            request.onload = function() {
-                if (request.status===200) {
-                    worker.port.emit(getRequest.onComplete, JSON.stringify(request.response));
-                }
-                else {
-                    worker.port.emit("errorListener", JSON.stringify({
-                        "error" : "Unhandled exception: "+commonResourceName+" API call "+
-                                  "returned with HTTP status: "+request.status+" "+request.statusText+".",
-                        "title" : "Axon v"+Self.version+" error"
-                    }));
-                }
-            }
-
-            request.ontimeout = function() {
-                worker.port.emit("errorListener", JSON.stringify({
-                    "error" : "<p>Request to '"+commonResourceName+"' took longer than the maximum of "+(SimplePrefs.prefs.axonMaximumWaitTime/1000)+" seconds."+
-                              "</p><p style='margin-top:10px'>Please try again later, or increase the maximum number of seconds to wait for a reply.</p>",
-                    "title" : "Axon v"+Self.version+" error"
-                }));
-            }
-
-            request.open("GET", url, true);
-            request.responseType = "json";
-            request.send();
+            sendXHRrequest(worker, url, commonResourceName, getRequest);
 
         });
    }

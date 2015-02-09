@@ -1,4 +1,10 @@
 09-feb-2015
+   Version 0.6
+        - Fixed a bug where Wikipedia tag {{Lowercase title}} was simulated
+          erroneously (e.g. IPsec).
+        - Code cleanup
+
+09-feb-2015
    Version 0.5
         - Titles from Wikipedia like EBay, IPhone, etc. are now lowercased
           like the tag {{Lowercase title}} does on Wikipedia.

@@ -5,7 +5,7 @@
     "description": "Axon provides access to the Wordnik dictionary and all Wikipedia articles in every language. \n\nDouble-click on a word to open the Wordnik dictionary definition in a speech balloon. If the word could not be found Axon continues on Wikipedia. To search Wikipedia immediately, hold down the hotkey and double-click on a word.",
     "author": "Ivo van Kamp",
     "license": "GPL 3",
-    "version": "0.5",
+    "version": "0.6",
     "icon": "./data/Images/icon-64.png",
     "preferences": [
     {
