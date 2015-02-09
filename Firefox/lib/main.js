@@ -159,7 +159,7 @@ PageMod.PageMod({
                     break;
                 case "wikipediaExtract":
                     commonResourceName = "Wikipedia extract";
-                    url = getWikipediaURL(getRequest.languageCode, searchKeyword, "action=query&prop=extracts&format=json&exchars=350&redirects=&continue=");
+                    url = getWikipediaURL(getRequest.languageCode, searchKeyword, "action=query&prop=extracts&format=json&exchars=4096&redirects=&continue=");
                     break;
                 case "wikipediaSuggestion":
                     commonResourceName = "Wikipedia suggestion";
@@ -169,8 +169,6 @@ PageMod.PageMod({
                     worker.port.emit("errorListener", getErrorAsJsonString("getRequest type "+getRequest.type+" not found."));
                     break;
             }
-
-            //console.log (getRequest.type + " " +url);
 
             var request = new NetXHR.XMLHttpRequest();
             request.timeout = SimplePrefs.prefs.axonMaximumWaitTime;

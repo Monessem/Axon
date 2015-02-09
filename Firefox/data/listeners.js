@@ -240,7 +240,7 @@
             randomExampleText = randomExampleText.replace(canonicalWordRegExp, "$1<span class='boldItalic'>$2</span>$3");
             global.dictionaryData.exampleText = randomExampleText;
 
-            global.dictionaryData.exampleTitle = toLowerCaseIfNotAnAbbreviation(randomExample.title);
+            global.dictionaryData.exampleTitle = randomExample.title;
             global.dictionaryData.exampleURL = randomExample.url;
             showExampleBubble();
         }
@@ -362,20 +362,41 @@
         }
     });
 
+    // Count characters inside HTML tags and truncate
+    // after maxNrOfCharacters.
+    function htmlTruncate(str, maxNrOfCharacters) {
+        var inTag = false;
+        var isSpace = false;
+        var c='', i=0, count=0;
+        var charCode=0;
+
+        while (c=str[i++]) {
+            if (c==="<") inTag=true;
+            if (!inTag) ++count;
+            if (c===">") inTag=false;
+            if (c===">") inTag=false;
+            isSpace = (c===" ");
+
+            if (count>=maxNrOfCharacters && !inTag && isSpace) {
+                // Truncate and add ellipsis
+                return str.substring(0, i)+" ...";
+            }
+        }
+        return str.substring(0, i);
+    }
+
     function filterDefinitionText(text) {
+
+        // Truncate text to 300 characters
+        text = htmlTruncate(text, 300);
 
         // Definition not allowed to end in ', especially:'
         text = text.replace(/^(.*),\sespecially:$/g, "$1.");
 
         // Wikipedia definitions start with bold. Remove bold tags
         // because the title above is already bold.
-        text = text.replace(/<b>[^A-Za-z]*([A-Za-z ]+)[^A-Za-z]*<\/b>/gi, "$1");
+        text = text.replace(/(<b>)([^]*?)(<\/b>)/gi, "$2");
 
-        // Abbreviate to 300 characters and add ellipsis
-        if (text.length > 300) {
-            text = text.substring(0,300);
-            text = text.replace(/\S+?\s?$/, " ...");
-        }
         return text;
     }
 
@@ -456,6 +477,41 @@
         showAnnotationBubble();
     }
 
+    function isCharacterLetter(character) {
+        var code = character.charCodeAt(0);
+        // A-Z or a-z
+        return (code >=65 && code <= 90) || (code >=97 && code <= 122);
+    }
+
+    // Check if Wikipedia {{Lowercase title}} should be applied.
+    // Required for: eBay, iPhone, etc.
+    function shouldFirstLetterBeLowerCase(title) {
+
+        if (title.length<3) return false;
+        var shouldFirstLetterBeLowerCase = true;
+        var c='', i=0;
+        var code = 0;
+
+        // If the first and second character of the Wikipedia title are in
+        // uppercase, and all the others are in lowercase, then assume
+        // the first letter should have been lowercase (e.g. eBay, iPhone, etc).
+        // This is not allowed on Wikipedia but corrected with the tag
+        // {{Lowercase title}}. A Wikipedia API call returning the title of
+        // a page however won't take this tag into account.
+        // See also: http://www.adherecreative.com/blog/bid/181249/The-Case-for-Lower-Case-A-Rebranding-Conundrum
+        while (c=title[i++]) {
+            code = c.charCodeAt(0);
+            if ( i>2 && c===" " ) return shouldFirstLetterBeLowerCase;
+            if ( i==1 && c!==c.toUpperCase() || !isCharacterLetter(c) )
+                shouldFirstLetterBeLowerCase = false;
+            if ( i==2 && c!==c.toUpperCase() || !isCharacterLetter(c) )
+                shouldFirstLetterBeLowerCase = false;
+            if ( i>2 && c!==c.toLowerCase() || !isCharacterLetter(c) )
+                shouldFirstLetterBeLowerCase = false;
+        }
+        return shouldFirstLetterBeLowerCase;
+    }
+
     self.port.on("wikipediaExtractListener", function(definitionResponse) {
 
         if (global.mustCancelOperations === true) return;
@@ -487,7 +543,13 @@
                 global.suggestedTextString = "";
 
                 var page = definitionResponse.query.pages[pageKey];
-                global.dictionaryData.title = toLowerCaseIfNotAnAbbreviation(page.title);
+                var title = page.title;
+
+                if (title.length>1 && shouldFirstLetterBeLowerCase(title)) {
+                    title = title[0].toLowerCase() + title.substring(1);
+                }
+
+                global.dictionaryData.title = title;
                 global.dictionaryData.definitionText = filterDefinitionText(page.extract);
                 global.dictionaryData.source = "wikipedia";
 
@@ -497,12 +559,6 @@
             }
         }
     });
-
-    function toLowerCaseIfNotAnAbbreviation(string) {
-        if (string===string.toUpperCase())
-            return string;
-        return string.toLowerCase();
-    }
 
     self.port.on("definitionListener", function(definitionResponse) {
 
@@ -514,7 +570,7 @@
             // Reset suggestion
             global.suggestedTextString = "";
 
-            global.dictionaryData.title = toLowerCaseIfNotAnAbbreviation(definitionResponse[0].word);
+            global.dictionaryData.title = definitionResponse[0].word;
             global.dictionaryData.definitionText = filterDefinitionText(definitionResponse[0].text);
             global.dictionaryData.source = "wordnik";
 
@@ -700,7 +756,7 @@
         text = text.replace(/^([A-z]*)(\s+|$).*/,"$1");
 
         // Change the text to lower case and return it
-        return toLowerCaseIfNotAnAbbreviation(text);
+        return text;
     }
 
     function getWordnikOrWikipediaEntry() {

@@ -1,3 +1,11 @@
+09-feb-2015
+   Version 0.5
+        - Titles from Wikipedia like EBay, IPhone, etc. are now lowercased
+          like the tag {{Lowercase title}} does on Wikipedia.
+        - Fixed a bug where Wikipedia extracts with a lot of HTML tags would
+          be shortened to about one sentence because the tags themselves
+          were also counted as characters.
+
 07-feb-2015
    Version 0.4
         - Added configurable hotkey to search Wikipedia directly
