@@ -24,6 +24,7 @@
     var global                           = {};    // used by DOM and Worker listeners
     global.dictionaryData                = {};    // dictionaryData variables are initialized in domListeners.js templateListener
     global.config                        = {};    // container for add-on configuration parameters
+    global.config.runtime                = {};    // runtime configuration parameters
     global.selectedTextPosition          = null;  // bounding dimensions of selected text
     global.originalSelectedTextString    = "";    // unfiltered selected text
     global.selectedTextString            = "";    // filtered selected text
@@ -102,7 +103,7 @@
                 case "wikipedia":
                     annotationMore.className = "";
                     /* Google 'define' keyword only works for English */
-                    var googleURL = global.config.currentWikipediaLanguageCode === ENGLISH_LANGUAGE_CODE ? GOOGLE_DEFINE_URL : GOOGLE_NORMAL_URL;
+                    var googleURL = global.config.runtime.wikipediaLanguageCode === ENGLISH_LANGUAGE_CODE ? GOOGLE_DEFINE_URL : GOOGLE_NORMAL_URL;
                     annotationMore.firstChild.setAttribute('href', googleURL + global.dictionaryData.title);
                     break;
 
@@ -272,7 +273,7 @@
     function getLanguageCode() {
         var languageCode = ENGLISH_LANGUAGE_CODE;
         if (global.dictionaryData.source === "wikipedia") {
-            languageCode = global.config.currentWikipediaLanguageCode;
+            languageCode = global.config.runtime.wikipediaLanguageCode;
         }
         return languageCode;
     }
@@ -428,6 +429,7 @@
 
         if (!isEmpty(response)) {
 
+
             var suggestion = response.query.searchinfo.suggestion;
 
             if (typeof suggestion==='undefined') {
@@ -446,7 +448,9 @@
             if (isEmpty(global.suggestedTextString)) {
                 showNoDefinitionFound();
             }
-            else getWordnikOrWikipediaEntry();
+            else {
+                getWordnikOrWikipediaEntry();
+            }
         }
     });
 
@@ -477,7 +481,7 @@
             self.port.emit("sendGetRequest", {
                 type         : "wiktionaryAudio",
                 searchString : global.dictionaryData.title,
-                languageCode : global.config.currentWikipediaLanguageCode,
+                languageCode : global.config.runtime.wikipediaLanguageCode,
                 onComplete   : "wiktionaryAudioListener"
             });
         }
@@ -499,9 +503,9 @@
     }
  
     function showNoDefinitionFound() {
-        var wikipediaURL = SEARCH_URL_SPECIAL_WIKIPEDIA.replace(/{LANGUAGECODE}/, global.config.currentWikipediaLanguageCode);
+        var wikipediaURL = SEARCH_URL_SPECIAL_WIKIPEDIA.replace(/{LANGUAGECODE}/, global.config.runtime.wikipediaLanguageCode);
         wikipediaURL += global.selectedTextString;
-        var wikipediaDomain = global.config.currentWikipediaLanguageCode + NO_MATCH_FOUND_WIKI_ZONE;
+        var wikipediaDomain = global.config.runtime.wikipediaLanguageCode + NO_MATCH_FOUND_WIKI_ZONE;
         global.dictionaryData.definitionText = NO_MATCH_FOUND_TEXT;
 
         setAnnotationBubbleTextAndAudio();
@@ -583,7 +587,7 @@
                     self.port.emit("sendGetRequest", {
                         type         : "wikipediaSuggestion",
                         searchString : global.selectedTextString,
-                        languageCode : global.config.currentWikipediaLanguageCode,
+                        languageCode : global.config.runtime.wikipediaLanguageCode,
                         onComplete   : "wikipediaSuggestionListener"
                     });
                 }
@@ -604,7 +608,7 @@
                 global.dictionaryData.definitionText = filterDefinitionText(page.extract);
                 global.dictionaryData.source = "wikipedia";
 
-                var wikipediaURL = SEARCH_URL_WIKIPEDIA.replace(/{LANGUAGECODE}/, global.config.currentWikipediaLanguageCode);
+                var wikipediaURL = SEARCH_URL_WIKIPEDIA.replace(/{LANGUAGECODE}/, global.config.runtime.wikipediaLanguageCode);
                 wikipediaURL += global.dictionaryData.title;
                 global.dictionaryData.attributionURL  = wikipediaURL;
                 global.dictionaryData.attributionText = wikipediaURL.replace(/https?:\/\//gi,"");
@@ -617,7 +621,7 @@
                     self.port.emit("sendGetRequest", {
                         type         : "wikipediaParsedPageDisplayTitle",
                         searchString : title,
-                        languageCode : global.config.currentWikipediaLanguageCode,
+                        languageCode : global.config.runtime.wikipediaLanguageCode,
                         onComplete   : "wikipediaParsedPageDisplayTitleListener"
                     });
                 }
@@ -685,10 +689,7 @@
         }
     });
 
-    function closeTextBubblesAndCancelOperations() {
-
-        global.mustCancelOperations = true;
-
+    function closeTextBubbles() {
         if (global.isTemplateLoaded) {
             var exampleContainer = document.getElementById('axon-example-container');
             var annotationContainer = document.getElementById('axon-annotation-container');
@@ -705,6 +706,11 @@
 
             global.isTemplateLoaded = false;
         }
+    }
+
+    function closeTextBubblesAndCancelOperations() {
+        closeTextBubbles();
+        global.mustCancelOperations = true;
     }
 
     function insertTextIntoElement(text, intoElement) {
@@ -838,7 +844,7 @@
         // Remove the selected text container to restore the document to its original state
         containerElement.parentNode.removeChild(containerElement);
 
-        return {
+        var data = {
             "top"            : pos.top,
             "right"          : pos.left + rect.width,
             "bottom"         : pos.top + rect.height,
@@ -846,6 +852,17 @@
             "leftCenter"     : pos.left + rect.width/2,
             "isInsideBubble" : isInsideBubble
         };
+
+        data.equals = function(objectB) {
+            var _this = this;
+            var objectsAreEqual = true;
+            Object.keys(this).forEach(function(key) {
+                if (typeof(_this[key])!=='function')
+                    if (_this[key]!==objectB[key]) objectsAreEqual=false;
+            });
+            return objectsAreEqual;
+        }
+        return data;
     }
 
     function filterSelectedText(text) {
@@ -854,7 +871,7 @@
         text = text.replace(/^\s+|\s+$/g, "");
 
         // Remove punctuation
-        text = text.replace(/['!"#$%\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
+        text = text.replace(/[’'!"#$%\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
 
         // If multiple words were selected in one Range use the first
         //text = text.replace(/^([A-z]*)(\s+|$).*/,"$1");
@@ -867,14 +884,14 @@
         self.port.emit("sendGetRequest", {
             type         : "wikipediaExtract",
             searchString : global.suggestedTextString || global.selectedTextString,
-            languageCode : global.config.currentWikipediaLanguageCode,
+            languageCode : global.config.runtime.wikipediaLanguageCode,
             onComplete   : "wikipediaExtractListener"
         });
     }
 
     function getWordnikOrWikipediaEntry() {
 
-        if (global.config.isWikipediaOnlyEnabled) {
+        if (global.config.runtime.mustSearchWikipediaOnly) {
             sendGetRequestWikipediaExtract();
         }
         else {
@@ -908,7 +925,9 @@
      * bubble template, calculate dimensions and position the template.
      */
     self.port.on("setConfiguration", function(data) {
+        var runtime = global.config.runtime;
         global.config = data;
+        global.config.runtime = runtime;
     });
  
     function wasHotkeyPressed(hotkey) {
@@ -977,6 +996,15 @@
         var selectedTextPosition = getSelectedTextPosition(Range);
         if (selectedTextPosition===null) return;
 
+        // If the same text is selected again and the template is still active
+        // then cancel.
+        if (global.selectedTextPosition!==null && selectedTextPosition.equals(global.selectedTextPosition)) {
+            if (global.isTemplateLoaded) {
+                closeTextBubblesAndCancelOperations();
+                return;
+            }
+        }
+
         // Will be switched off by mouseup listener calling this function
         // before click event listener is called.
         global.ignoreCancellationClick = true;
@@ -988,32 +1016,34 @@
             // Hide example text bubble
             document.getElementById('axon-example-container').className = "displayNone";
         }
+        else {
+            // If present close the speech bubbles from previous selection
+            closeTextBubbles();
+        }
 
         global.mustCancelOperations = false;
         global.selectedTextPosition = selectedTextPosition;
 
-        // start of old get config and template handler
-
+        // Insert template.html and template.css into body of document
         if (global.isTemplateLoaded === false) {
             loadTemplate(global.config);
             global.isTemplateLoaded = true;
         }
 
         /* Wikipedia */
-        global.config.currentWikipediaLanguageCode = global.config.mainWikipediaLanguageCode;
+        global.config.runtime.wikipediaLanguageCode   = global.config.mainWikipediaLanguageCode;
+        global.config.runtime.mustSearchWikipediaOnly = global.config.isWikipediaOnlyEnabled;
 
-        /* Show a random example next to every word */
-        global.config.isRandomExampleEnabled = global.config.isRandomExampleEnabled;
         initializeDictionaryData();
         global.dictionaryData.definitionText = START_OF_SEARCH_TEXT;
         showAnnotationBubble();
 
         if (wasHotkeyPressed(global.config.secondWikipediaHotkey)) {
-            global.config.currentWikipediaLanguageCode = global.config.secondWikipediaLanguageCode;
-            sendGetRequestWikipediaExtract();
+            global.config.runtime.wikipediaLanguageCode = global.config.secondWikipediaLanguageCode;
+            // If the second Wikipedia hotkey was pressed prevent searching the Dictionary
+            global.config.runtime.mustSearchWikipediaOnly = true;
         }
-        else 
-            getWordnikOrWikipediaEntry();
+        getWordnikOrWikipediaEntry();
     }
 
     window.addEventListener("dblclick", function(e) {
@@ -1030,7 +1060,10 @@
     }, true);
 
     window.addEventListener("click", function(e) {
-        if (!global.ignoreCancellationClick && e.which===1) { // left mouse button
+        if (e.which===1 && 
+            global.isTemplateLoaded && 
+            !global.ignoreCancellationClick)
+        {
             closeTextBubblesAndCancelOperations();
         }
     });

@@ -1,9 +1,13 @@
 13-feb-2015
+   Version 0.8
+        - Small bugfixes
+
+13-feb-2015
    Version 0.7
         - Added hotkey to regular search
         - Added ability to select text
         - Added ability to select Wordnik dictionary to add-on preferences
-        - Added source dictionary below definition text
+        - Added source dictionary title below definition text
         - Changed Axon icon to Wordnik API logo
 
 09-feb-2015
