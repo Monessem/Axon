@@ -33,17 +33,33 @@
     global.mustCancelOperations          = false; // cancel calls in process after esc, close button, or clicking next to the speech bubbles
     global.modifierKeyPressedString      = "";    // the modifier key held down during double-click
 
-    const WORDNIK_WORD_URL              = "https://www.wordnik.com/words/";
-    const WIKIPEDIA_WIKI_URL            = "https://{LANGUAGECODE}.wikipedia.org/wiki/";
-    const WIKIPEDIA_SPECIAL_SEARCH_URL  = "https://{LANGUAGECODE}.wikipedia.org/wiki/Special:Search/";
-    const GOOGLE_DEFINE_URL             = "https://www.google.com/search?hl=en&q=define+"
-    const GOOGLE_NORMAL_URL             = "https://www.google.com/search?q="
+    // Wordnik dictionary titles
+    const FULL_TITLE_AHD                 = "The American Heritage Dictionary 4E";
+    const FULL_TITLE_WIKTIONARY          = "Wiktionary";
+    const FULL_TITLE_GCIDE               = "GNU Collaborative International Dictionary of English";
+    const FULL_TITLE_CENTURY             = "The Century Dictionary and Cyclopedia";
+    const FULL_TITLE_WORDNET             = "WordNet 3.0 by Princeton University";
 
-    const START_OF_SEARCH_TEXT          = "Searching...";
-    const NO_DEFINITION_FOUND_TEXT      = "No definition found on ";
-    const NO_DEFINITION_FOUND_WIKI_ZONE = ".wikipedia.org";
-    const ENGLISH_LANGUAGE_CODE         = "en";
-    const MODIFIER_KEYS                 = {"ctrl": "ctrlKey", "shift": "shiftKey", "alt": "altKey", "cmd": "metaKey"};
+    // Wordnik dictionaries online
+    const SEARCH_URL_AHD                 = "https://www.ahdictionary.com/word/search.html?q=";
+    const SEARCH_URL_WIKTIONARY          = "https://en.wiktionary.org/wiki/";
+    const SEARCH_URL_GCIDE               = "http://gcide.gnu.org.ua/?db=gcide&define=1&q=";
+    const SEARCH_URL_CENTURY             = "http://www.micmap.org/dicfro/search/century-dictionary/";
+    const SEARCH_URL_WORDNET             = "http://wordnetweb.princeton.edu/perl/webwn?s=";
+
+    // Wordnik and Wikipedia URLs
+    const SEARCH_URL_WORDNIK             = "https://www.wordnik.com/words/";
+    const SEARCH_URL_WIKIPEDIA           = "https://{LANGUAGECODE}.wikipedia.org/wiki/";
+    const SEARCH_URL_SPECIAL_WIKIPEDIA   = "https://{LANGUAGECODE}.wikipedia.org/wiki/Special:Search/";
+    const GOOGLE_DEFINE_URL              = "https://www.google.com/search?hl=en&q=define+"
+    const GOOGLE_NORMAL_URL              = "https://www.google.com/search?q="
+
+    // Miscellaneous
+    const START_OF_SEARCH_TEXT           = "Searching...";
+    const NO_MATCH_FOUND_TEXT            = "No match found on ";
+    const NO_MATCH_FOUND_WIKI_ZONE       = ".wikipedia.org";
+    const ENGLISH_LANGUAGE_CODE          = "en";
+    const MODIFIER_KEYS                  = {"ctrl": "ctrlKey", "shift": "shiftKey", "alt": "altKey", "cmd": "metaKey"};
 
     // Function from jQuery JavaScript Library v1.11.2
     function isEmpty( obj ) {
@@ -72,29 +88,28 @@
             annotationAttribution.className= "displayNone";
         }
         else {
+
             document.getElementById('annotation-title-row').className = "";
             var annotationTitle = document.getElementById('annotation-title');
-            //FIXME: non html
-            parseHTMLAndInsertIntoElement(global.dictionaryData.title, annotationTitle, true);
+            insertTextIntoElement(global.dictionaryData.title, annotationTitle);
 
-            if (global.dictionaryData.source === "wikipedia") {
-                annotationAttribution.className = "";
-                var wikipediaURL = WIKIPEDIA_WIKI_URL.replace(/{LANGUAGECODE}/, global.config.wikipediaLanguageCode);
-                wikipediaURL += global.dictionaryData.title;
-                annotationAttribution.firstChild.setAttribute('href', wikipediaURL);
-                //FIXME: non html
-                parseHTMLAndInsertIntoElement(wikipediaURL.replace(/https?:\/\//gi,""), annotationAttribution.firstChild, true);
+            annotationAttribution.className = "";
+            annotationAttribution.firstChild.setAttribute('href', global.dictionaryData.attributionURL);
+            parseHTMLAndInsertIntoElement(global.dictionaryData.attributionText, annotationAttribution.firstChild, true);
 
-                annotationMore.className = "";
-                /* Google 'define' keyword only works for English */
-                var googleURL = global.config.wikipediaLanguageCode === ENGLISH_LANGUAGE_CODE ? GOOGLE_DEFINE_URL : GOOGLE_NORMAL_URL;
-                annotationMore.firstChild.setAttribute('href', googleURL + global.dictionaryData.title);
-                annotationMore.style.marginTop = "10px";
-            }
-            else {
-                annotationMore.className = "";
-                annotationMore.firstChild.setAttribute('href', WORDNIK_WORD_URL + global.dictionaryData.title);
-                annotationMore.style.marginTop = "8px";
+            switch (global.dictionaryData.source) {
+
+                case "wikipedia":
+                    annotationMore.className = "";
+                    /* Google 'define' keyword only works for English */
+                    var googleURL = global.config.currentWikipediaLanguageCode === ENGLISH_LANGUAGE_CODE ? GOOGLE_DEFINE_URL : GOOGLE_NORMAL_URL;
+                    annotationMore.firstChild.setAttribute('href', googleURL + global.dictionaryData.title);
+                    break;
+
+                case "wordnik":
+                    annotationMore.className = "";
+                    annotationMore.firstChild.setAttribute('href', SEARCH_URL_WORDNIK + global.dictionaryData.title);
+                    break;
             }
         }
 
@@ -106,8 +121,7 @@
         }
         else {
             document.getElementById('annotation-audio-icon').className = "";
-            //FIXME: non html
-            parseHTMLAndInsertIntoElement(global.dictionaryData.audioFileURL, document.getElementById('annotation-audio-icon').firstChild, true);
+            insertTextIntoElement(global.dictionaryData.audioFileURL, document.getElementById('annotation-audio-icon').firstChild);
         }
     }
 
@@ -127,23 +141,23 @@
 
         if (typeof global.selectedTextPosition!=="undefined") {
 
-            document.getElementById('annotation-tail-main').style.left = (global.selectedTextPosition.leftCenter-14)+"px";
-            document.getElementById('annotation-main').style.left       = (global.selectedTextPosition.leftCenter-150)+"px";
+            document.getElementById('annotation-tail-main').style.left = (global.selectedTextPosition.leftCenter-10)+"px";
+            document.getElementById('annotation-main').style.left      = (global.selectedTextPosition.leftCenter-150)+"px";
 
             if (forceDirectionDown===false || typeof(forceDirectionDown)==='undefined' &&
                     // Check if there is enough room above the selected text for the speech bubble
-                    window.scrollY < (global.selectedTextPosition.top - bubbleHeight - 15))
+                    window.scrollY < (global.selectedTextPosition.top - bubbleHeight - 12))
             {
                 global.isTextBubbleAboveSelectedText = true;
                 setInnerOuterTailDirection("annotation-tail", "up", "down");
-                document.getElementById('annotation-tail-main').style.top  = (global.selectedTextPosition.top-14)+"px";
-                document.getElementById('annotation-main').style.top        = (global.selectedTextPosition.top-bubbleHeight-13)+"px";
+                document.getElementById('annotation-tail-main').style.top = (global.selectedTextPosition.top-11)+"px";
+                document.getElementById('annotation-main').style.top      = (global.selectedTextPosition.top-bubbleHeight-10)+"px";
             }
             else {
                 global.isTextBubbleAboveSelectedText = false;
                 setInnerOuterTailDirection("annotation-tail", "down", "up");
-                document.getElementById('annotation-tail-main').style.top  = (global.selectedTextPosition.bottom)+"px";
-                document.getElementById('annotation-main').style.top        = (global.selectedTextPosition.bottom+12)+"px";
+                document.getElementById('annotation-tail-main').style.top = (global.selectedTextPosition.bottom+2)+"px";
+                document.getElementById('annotation-main').style.top      = (global.selectedTextPosition.bottom+10)+"px";
             }
         }
     }
@@ -161,7 +175,6 @@
         
         var exampleAttribution = document.getElementById('example-attribution');
         exampleAttribution.firstChild.setAttribute('href', global.dictionaryData.exampleURL);
-        // FIXME: non html
         parseHTMLAndInsertIntoElement(global.dictionaryData.exampleTitle, exampleAttribution.firstChild, true);
 
         var annotationBubbleHeight = document.getElementById('annotation-main').offsetHeight;
@@ -189,7 +202,7 @@
                 }
             }
             else {
-                mainOffset = +(annotationBubbleHeight-exampleBubbleHeight)/2+28;
+                mainOffset = +(annotationBubbleHeight-exampleBubbleHeight)/2+25;
                 tailOffset = +annotationBubbleHeight/2+15;
             }
 
@@ -200,16 +213,16 @@
             if (window.innerWidth > global.selectedTextPosition.leftCenter+475 ) {
                 canExampleFitNextToAnnotation = true;
                 setInnerOuterTailDirection("example-tail", "right", "left");
-                document.getElementById('example-tail-main').style.left = (global.selectedTextPosition.leftCenter+150)+"px";
-                document.getElementById('example-main').style.left       = (global.selectedTextPosition.leftCenter+162)+"px";
+                document.getElementById('example-tail-main').style.left = (global.selectedTextPosition.leftCenter+152)+"px";
+                document.getElementById('example-main').style.left       = (global.selectedTextPosition.leftCenter+161)+"px";
             }
             else {
                 // Check if there is room on the left
                 if (global.selectedTextPosition.leftCenter>465 ) {
                     canExampleFitNextToAnnotation = true;
                     setInnerOuterTailDirection("example-tail", "left", "right");
-                    document.getElementById('example-tail-main').style.left = (global.selectedTextPosition.leftCenter-150-14)+"px";
-                    document.getElementById('example-main').style.left       = (global.selectedTextPosition.leftCenter-462)+"px";
+                    document.getElementById('example-tail-main').style.left = (global.selectedTextPosition.leftCenter-150-12)+"px";
+                    document.getElementById('example-main').style.left       = (global.selectedTextPosition.leftCenter-461)+"px";
                 }
             }
             if (!canExampleFitNextToAnnotation)
@@ -259,7 +272,7 @@
     function getLanguageCode() {
         var languageCode = ENGLISH_LANGUAGE_CODE;
         if (global.dictionaryData.source === "wikipedia") {
-            languageCode = global.config.wikipediaLanguageCode;
+            languageCode = global.config.currentWikipediaLanguageCode;
         }
         return languageCode;
     }
@@ -314,7 +327,7 @@
 
                             self.port.emit("sendGetRequest", {
                                 type         : "wiktionaryAudioFileURL",
-                                keyword      : fileNameWithPrefix,
+                                searchString : fileNameWithPrefix,
                                 languageCode : getLanguageCode(),
                                 onComplete   : "wiktionaryAudioFileURLListener"
                             });
@@ -353,7 +366,7 @@
         if (global.dictionaryData.audioFileURL === "") {
             self.port.emit("sendGetRequest", {
                 type         : "wiktionaryAudio",
-                keyword      : global.dictionaryData.title,
+                searchString : global.dictionaryData.title,
                 languageCode : getLanguageCode(),
                 onComplete   : "wiktionaryAudioListener"
             });
@@ -363,13 +376,12 @@
         }
     });
 
-    // Count characters inside HTML tags and truncate
+    // Count characters not part of HTML tags and truncate
     // after maxNrOfCharacters.
     function htmlTruncate(str, maxNrOfCharacters) {
         var inTag = false;
         var isSpace = false;
         var c='', i=0, count=0;
-        var charCode=0;
 
         while (c=str[i++]) {
             if (c==="<") inTag=true;
@@ -443,9 +455,11 @@
         if (global.config.isRandomExampleEnabled) {
 
             self.port.emit("sendGetRequest", {
-                type       : "wordnikExamples",
-                keyword    : global.selectedTextString,
-                onComplete : "wordnikExamplesListener"
+                type         : "wordnikExamples",
+                // Selecting a single ampersand character will be translated to 'Ampersand'
+                // by Wikipedia. Prevent the Wordnik API from choking on the single character.
+                searchString : doesStringContainAlpha(global.selectedTextString) ? global.selectedTextString : global.dictionaryData.title,
+                onComplete   : "wordnikExamplesListener"
             });
         }
     }
@@ -454,30 +468,64 @@
 
         if (getLanguageCode() === ENGLISH_LANGUAGE_CODE) {
             self.port.emit("sendGetRequest", {
-                type       : "wordnikAudio",
-                keyword    : global.dictionaryData.title,
-                onComplete : "wordnikAudioListener"
+                type         : "wordnikAudio",
+                searchString : global.dictionaryData.title,
+                onComplete   : "wordnikAudioListener"
             });
         }
         else { 
             self.port.emit("sendGetRequest", {
                 type         : "wiktionaryAudio",
-                keyword      : global.dictionaryData.title,
-                languageCode : global.config.wikipediaLanguageCode,
+                searchString : global.dictionaryData.title,
+                languageCode : global.config.currentWikipediaLanguageCode,
                 onComplete   : "wiktionaryAudioListener"
             });
         }
     }
 
+    function createAnchorElement(text, URL) {
+        // New anchor: <a target="_blank" href="https://en.wikipedia.org/wiki/Special:Search/[SEARCHSTRING]">[LANGCODE].wikipedia.org</a>
+        var newAnchorElement = document.createElement('a');
+        newAnchorElement.setAttribute('href', URL);
+        newAnchorElement.setAttribute('target', '_blank');
+        insertTextIntoElement(text, newAnchorElement);
+
+        // Beat mouseup to the chase
+        newAnchorElement.addEventListener('mousedown', function(e) {
+            if (e.which===1) // left mouse button
+                global.mustIgnoreMouseUp = true; // enable links inside speech bubble
+        });
+        return newAnchorElement;
+    }
+ 
     function showNoDefinitionFound() {
-        var wikipediaURL = WIKIPEDIA_SPECIAL_SEARCH_URL.replace(/{LANGUAGECODE}/, global.config.wikipediaLanguageCode);
+        var wikipediaURL = SEARCH_URL_SPECIAL_WIKIPEDIA.replace(/{LANGUAGECODE}/, global.config.currentWikipediaLanguageCode);
         wikipediaURL += global.selectedTextString;
-        var wikipediaDomain = global.config.wikipediaLanguageCode + NO_DEFINITION_FOUND_WIKI_ZONE;
-        global.dictionaryData.definitionText = NO_DEFINITION_FOUND_TEXT + "<a href='"+wikipediaURL+"' target='_blank'>"+wikipediaDomain+"</a>";
-        showAnnotationBubble();
+        var wikipediaDomain = global.config.currentWikipediaLanguageCode + NO_MATCH_FOUND_WIKI_ZONE;
+        global.dictionaryData.definitionText = NO_MATCH_FOUND_TEXT;
+
+        setAnnotationBubbleTextAndAudio();
+        var annotationDefinition = document.getElementById('annotation-definition');
+        var newAnchorElement = createAnchorElement(wikipediaDomain, wikipediaURL);
+        annotationDefinition.insertBefore(newAnchorElement, null);
+        setAnnotationBubblePosition();
     }
 
-    function isCharacterLetter(character) {
+    function isStringAlpha(character) {
+        var code = character.charCodeAt(0);
+        // A-Z or a-z
+        return (code >=65 && code <= 90) || (code >=97 && code <= 122);
+    }
+
+    function doesStringContainAlpha(str) {
+        var c='', i=0;
+        while (c=str[i++]) {
+            if (isCharacterAlpha(c)) return true;
+        }
+        return false;
+    }
+
+    function isCharacterAlpha(character) {
         var code = character.charCodeAt(0);
         // A-Z or a-z
         return (code >=65 && code <= 90) || (code >=97 && code <= 122);
@@ -488,28 +536,24 @@
     function areFirstTwoLettersUppercase(title) {
 
         if (title.length<3) return false;
-        var areFirstTwoLettersUppercase = true;
-        var c='', i=0;
-        var code = 0;
 
         // If the first and second character of the Wikipedia title are in
-        // uppercase, and all the others are in lowercase, then assume
-        // the first letter should have been lowercase (e.g. eBay, iPhone, etc).
+        // uppercase, and all the others are in lowercase, then the first
+        // letter could be lowercase (e.g. eBay, iPhone, etc).
         // This is not allowed on Wikipedia but corrected with the tag
         // {{Lowercase title}}. A Wikipedia API call returning the title of
         // a page however won't take this tag into account.
         // See also: http://www.adherecreative.com/blog/bid/181249/The-Case-for-Lower-Case-A-Rebranding-Conundrum
+        var c='', i=0;
         while (c=title[i++]) {
-            code = c.charCodeAt(0);
-            if ( i>2 && c===" " ) return areFirstTwoLettersUppercase;
-            if ( i==1 && c!==c.toUpperCase() || !isCharacterLetter(c) )
-                areFirstTwoLettersUppercase = false;
-            if ( i==2 && c!==c.toUpperCase() || !isCharacterLetter(c) )
-                areFirstTwoLettersUppercase = false;
-            if ( i>2 && c!==c.toLowerCase() || !isCharacterLetter(c) )
-                areFirstTwoLettersUppercase = false;
+
+            if ( i>3 && c===" " ) return true;
+
+            // IP<3 hone>3
+            if ( c!==( i<3 ? c.toUpperCase() : c.toLowerCase() ) || !isCharacterAlpha(c) )
+                return false;
         }
-        return areFirstTwoLettersUppercase;
+        return true;
     }
 
     self.port.on("wikipediaParsedPageDisplayTitleListener", function(response) {
@@ -538,8 +582,8 @@
                 if (global.suggestedTextString==="") {
                     self.port.emit("sendGetRequest", {
                         type         : "wikipediaSuggestion",
-                        keyword      : global.selectedTextString,
-                        languageCode : global.config.wikipediaLanguageCode,
+                        searchString : global.selectedTextString,
+                        languageCode : global.config.currentWikipediaLanguageCode,
                         onComplete   : "wikipediaSuggestionListener"
                     });
                 }
@@ -560,6 +604,11 @@
                 global.dictionaryData.definitionText = filterDefinitionText(page.extract);
                 global.dictionaryData.source = "wikipedia";
 
+                var wikipediaURL = SEARCH_URL_WIKIPEDIA.replace(/{LANGUAGECODE}/, global.config.currentWikipediaLanguageCode);
+                wikipediaURL += global.dictionaryData.title;
+                global.dictionaryData.attributionURL  = wikipediaURL;
+                global.dictionaryData.attributionText = wikipediaURL.replace(/https?:\/\//gi,"");
+
                 // Check if title has first two letters capitalized.
                 // E.g. EBay, IPhone, etc.
                 if (title.length>2 && areFirstTwoLettersUppercase(title)) {
@@ -567,8 +616,8 @@
                     // Fetch the actual display title from Wikipedia
                     self.port.emit("sendGetRequest", {
                         type         : "wikipediaParsedPageDisplayTitle",
-                        keyword      : title,
-                        languageCode : global.config.wikipediaLanguageCode,
+                        searchString : title,
+                        languageCode : global.config.currentWikipediaLanguageCode,
                         onComplete   : "wikipediaParsedPageDisplayTitleListener"
                     });
                 }
@@ -591,9 +640,38 @@
             // Reset suggestion
             global.suggestedTextString = "";
 
-            global.dictionaryData.title = definitionResponse[0].word;
-            global.dictionaryData.definitionText = filterDefinitionText(definitionResponse[0].text);
-            global.dictionaryData.source = "wordnik";
+            var dictionaryData = global.dictionaryData;
+            dictionaryData.title = definitionResponse[0].word;
+            dictionaryData.definitionText = filterDefinitionText(definitionResponse[0].text);
+            dictionaryData.source = "wordnik";
+
+            switch (definitionResponse[0].sourceDictionary) {
+
+                case "ahd-legacy":
+                    dictionaryData.attributionText = FULL_TITLE_AHD;
+                    dictionaryData.attributionURL  = SEARCH_URL_AHD + global.dictionaryData.title;
+                    break;
+
+               case "wiktionary":
+                    dictionaryData.attributionText = FULL_TITLE_WIKTIONARY;
+                    dictionaryData.attributionURL  = SEARCH_URL_WIKTIONARY + global.dictionaryData.title;
+                    break;
+
+                case "gcide":
+                    dictionaryData.attributionText = FULL_TITLE_GCIDE;
+                    dictionaryData.attributionURL  = SEARCH_URL_GCIDE + global.dictionaryData.title;
+                    break;
+ 
+                case "century":
+                    dictionaryData.attributionText = FULL_TITLE_CENTURY;
+                    dictionaryData.attributionURL  = SEARCH_URL_CENTURY + global.dictionaryData.title;
+                    break;
+ 
+                case "wordnet":
+                    dictionaryData.attributionText = FULL_TITLE_WORDNET;
+                    dictionaryData.attributionURL  = SEARCH_URL_WORDNET + global.dictionaryData.title;
+                    break;
+            }
 
             showAnnotationBubble();
             getPronunciation();
@@ -603,13 +681,7 @@
             getRandomExampleIfEnabled();
         }
         else {
-
-            self.port.emit("sendGetRequest", {
-                type         : "wikipediaExtract",
-                keyword      : global.suggestedTextString || global.selectedTextString,
-                languageCode : global.config.wikipediaLanguageCode,
-                onComplete   : "wikipediaExtractListener"
-            });
+            sendGetRequestWikipediaExtract();
         }
     });
 
@@ -635,6 +707,12 @@
         }
     }
 
+    function insertTextIntoElement(text, intoElement) {
+        var newTextNode = document.createTextNode(text);
+        emptyElement(intoElement);
+        intoElement.insertBefore(newTextNode, null);
+    }
+
     function parseHTMLAndInsertIntoElement(dataString, intoElement, mustEmptyFirst) {
 
         if (typeof mustEmptyFirst!=='undefined' && mustEmptyFirst)
@@ -651,6 +729,7 @@
     }
 
     function loadTemplate(data) {
+
         var newStyleElement = document.createElement('style');
         newStyleElement.id = "axon-style-container";
         parseHTMLAndInsertIntoElement(data.htmlTemplateCss, newStyleElement);
@@ -669,6 +748,10 @@
             e.stopPropagation();
             e.preventDefault();
             return false;
+        });
+
+        document.getElementById('annotation-definition').addEventListener("click", function(e) {
+            e.stopPropagation();
         });
 
         document.getElementById('annotation-main').addEventListener("click", function(e) {
@@ -771,44 +854,50 @@
         text = text.replace(/^\s+|\s+$/g, "");
 
         // Remove punctuation
-        text = text.replace(/['!"#$%&\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
+        text = text.replace(/['!"#$%\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
 
         // If multiple words were selected in one Range use the first
-        text = text.replace(/^([A-z]*)(\s+|$).*/,"$1");
+        //text = text.replace(/^([A-z]*)(\s+|$).*/,"$1");
 
         // Change the text to lower case and return it
         return text;
     }
 
+    function sendGetRequestWikipediaExtract() {
+        self.port.emit("sendGetRequest", {
+            type         : "wikipediaExtract",
+            searchString : global.suggestedTextString || global.selectedTextString,
+            languageCode : global.config.currentWikipediaLanguageCode,
+            onComplete   : "wikipediaExtractListener"
+        });
+    }
+
     function getWordnikOrWikipediaEntry() {
 
         if (global.config.isWikipediaOnlyEnabled) {
-
-            self.port.emit("sendGetRequest", {
-                type         : "wikipediaExtract",
-                keyword      : global.suggestedTextString || global.selectedTextString,
-                languageCode : global.config.wikipediaLanguageCode,
-                onComplete   : "wikipediaExtractListener"
-            });
+            sendGetRequestWikipediaExtract();
         }
         else {
             self.port.emit("sendGetRequest", {
-                type       : "wordnikDefinitions",
-                keyword    : global.suggestedTextString || global.selectedTextString,
-                onComplete : "definitionListener"
+                type         : "wordnikDefinitions",
+                searchString : global.suggestedTextString || global.selectedTextString,
+                onComplete   : "definitionListener"
             });
         }
     }
 
+
     /* Initialize dictionaryData. Holds data fetched from external resources (Wordnik/Wikipedia). */
     function initializeDictionaryData() {
-        global.dictionaryData.title          = "";
-        global.dictionaryData.definitionText = "";
-        global.dictionaryData.exampleTitle   = "";
-        global.dictionaryData.exampleText    = "";
-        global.dictionaryData.exampleURL     = "";
-        global.dictionaryData.audioFileURL   = "";
-        global.dictionaryData.source         = "";
+        global.dictionaryData.title           = "";
+        global.dictionaryData.definitionText  = "";
+        global.dictionaryData.exampleTitle    = "";
+        global.dictionaryData.exampleText     = "";
+        global.dictionaryData.exampleURL      = "";
+        global.dictionaryData.audioFileURL    = "";
+        global.dictionaryData.source          = "";
+        global.dictionaryData.attributionText = "";
+        global.dictionaryData.attributionURL  = "";
     }
 
     /* 
@@ -818,31 +907,15 @@
      * API and other external resources, insert the fetched data into the speech
      * bubble template, calculate dimensions and position the template.
      */
-    self.port.on("configAndTemplateListener", function(data) {
-
-        if (global.isTemplateLoaded === false) {
-            loadTemplate(data);
-            global.isTemplateLoaded = true;
-        }
-
-        /* Wikipedia */
-        global.config.wikipediaLanguageCode = wasHotkeyPressed(data.hotkey) ? data.immediateLookupWikipediaLanguageCode : data.mainWikipediaLanguageCode;
-        global.config.isWikipediaOnlyEnabled = data.isWikipediaOnlyEnabled || wasHotkeyPressed(data.hotkey);
-
-        /* Show a random example next to every word */
-        global.config.isRandomExampleEnabled = data.isRandomExampleEnabled;
-
-        initializeDictionaryData();
-        global.dictionaryData.definitionText = START_OF_SEARCH_TEXT;
-        showAnnotationBubble();
-        getWordnikOrWikipediaEntry();
+    self.port.on("setConfiguration", function(data) {
+        global.config = data;
     });
-
+ 
     function wasHotkeyPressed(hotkey) {
         return (global.modifierKeyPressedString===hotkey);
     }
 
-    function getModifierKeyFromDoubleClickEvent(e) {
+    function getModifierKeyFromEvent(e) {
         var keyPressed = "none";
         Object.keys(MODIFIER_KEYS).forEach(function(key) {
             if (e[MODIFIER_KEYS[key]]) keyPressed = key;
@@ -865,48 +938,101 @@
         });
     }
 
+    function handleSelection(e) {
+
+        // Enable closeTextBubblesAndCancelOperations() on window click
+        global.ignoreCancellationClick = false;
+
+        global.modifierKeyPressedString = getModifierKeyFromEvent(e);
+
+        // Either Dblclick or Mouseup
+        if (e.type !== global.config.activateAxonWhenI) {
+            return;
+        } 
+
+        // Either 'Disable hotkey' was selected or one of the hotkeys
+        // has to have been pressed.
+        if ('none' !== global.config.activateAxonWhileHoldingDown && 
+            !wasHotkeyPressed(global.config.activateAxonWhileHoldingDown) &&
+            !wasHotkeyPressed(global.config.secondWikipediaHotkey))
+        {
+            return;
+        }
+
+        var Selection = window.getSelection();
+        if (Selection.rangeCount===0) return;
+
+        var Range = null;
+        if (Selection.rangeCount>1)
+           // If multiple words selected use the last one
+           Range = Selection.getRangeAt(Selection.rangeCount-1);
+        else
+           Range = Selection.getRangeAt(0);
+
+        var selectedTextString = Range.toString();
+        global.selectedTextString = filterSelectedText(selectedTextString);
+        if (global.selectedTextString.length > 2000) return;
+        if (global.selectedTextString.length===0) return;
+
+        var selectedTextPosition = getSelectedTextPosition(Range);
+        if (selectedTextPosition===null) return;
+
+        // Will be switched off by mouseup listener calling this function
+        // before click event listener is called.
+        global.ignoreCancellationClick = true;
+
+        // If a text inside the dictionary bubble was selected then
+        // keep the old selected text position.
+        if (selectedTextPosition.isInsideBubble) {
+            selectedTextPosition = global.selectedTextPosition;
+            // Hide example text bubble
+            document.getElementById('axon-example-container').className = "displayNone";
+        }
+
+        global.mustCancelOperations = false;
+        global.selectedTextPosition = selectedTextPosition;
+
+        // start of old get config and template handler
+
+        if (global.isTemplateLoaded === false) {
+            loadTemplate(global.config);
+            global.isTemplateLoaded = true;
+        }
+
+        /* Wikipedia */
+        global.config.currentWikipediaLanguageCode = global.config.mainWikipediaLanguageCode;
+
+        /* Show a random example next to every word */
+        global.config.isRandomExampleEnabled = global.config.isRandomExampleEnabled;
+        initializeDictionaryData();
+        global.dictionaryData.definitionText = START_OF_SEARCH_TEXT;
+        showAnnotationBubble();
+
+        if (wasHotkeyPressed(global.config.secondWikipediaHotkey)) {
+            global.config.currentWikipediaLanguageCode = global.config.secondWikipediaLanguageCode;
+            sendGetRequestWikipediaExtract();
+        }
+        else 
+            getWordnikOrWikipediaEntry();
+    }
+
+    window.addEventListener("dblclick", function(e) {
+        handleSelection(e);
+    }, true);
+
+    window.addEventListener("mouseup", function(e) {
+        if (e.which!==1) return; // if not left mouse button
+        if (global.mustIgnoreMouseUp){ // enables links inside speech bubble
+            global.mustIgnoreMouseUp = false;
+            return;
+        }
+        handleSelection(e);
+    }, true);
+
     window.addEventListener("click", function(e) {
-        if (e.which===1) { // left mouse button
+        if (!global.ignoreCancellationClick && e.which===1) { // left mouse button
             closeTextBubblesAndCancelOperations();
         }
     });
-
-    window.addEventListener("dblclick", function(e) {
-
-         var Selection = window.getSelection();
-         if (Selection.rangeCount===0) return;
-
-         var Range = null;
-         if (Selection.rangeCount>1)
-            // If multiple words selected use the last one
-            Range = Selection.getRangeAt(Selection.rangeCount-1);
-         else
-            Range = Selection.getRangeAt(0);
-
-         var selectedTextString = Range.toString();
-         global.selectedTextString = filterSelectedText(selectedTextString);
-         if (global.selectedTextString.length > 2000) return;
-         if (global.selectedTextString.length===0) return;
-
-         var selectedTextPosition = getSelectedTextPosition(Range);
-         if (selectedTextPosition===null) return;
-
-         // If a text inside the dictionary bubble was selected then
-         // keep the old selected text position.
-         if (selectedTextPosition.isInsideBubble) {
-             selectedTextPosition = global.selectedTextPosition;
-             // Hide example text bubble
-             document.getElementById('axon-example-container').className = "displayNone";
-         }
-
-         global.mustCancelOperations = false;
-         global.selectedTextPosition = selectedTextPosition;
-         global.modifierKeyPressedString = getModifierKeyFromDoubleClickEvent(e);
-
-         /* Request templates from add-on data folder */
-         self.port.emit("getConfigurationAndTemplate", {
-             onComplete    : "configAndTemplateListener"
-         });
-    }, true);
 
 })();

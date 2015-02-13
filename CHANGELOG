@@ -1,3 +1,11 @@
+13-feb-2015
+   Version 0.7
+        - Added hotkey to regular search
+        - Added ability to select text
+        - Added ability to select Wordnik dictionary to add-on preferences
+        - Added source dictionary below definition text
+        - Changed Axon icon to Wordnik API logo
+
 09-feb-2015
    Version 0.6
         - Fixed a bug where Wikipedia tag {{Lowercase title}} was simulated

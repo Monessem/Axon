@@ -41,9 +41,9 @@ var button = Buttons.ActionButton({
     id: "mozilla-link",
     label: "Visit Mozilla",
     icon: {
-        "16": "./Images/icon-16.png",
-        "32": "./Images/icon-32.png",
-        "64": "./Images/icon-64.png"
+        "16": "./Images/Wordnik-logo-16.png",
+        "32": "./Images/Wordnik-logo-32.png",
+        "64": "./Images/Wordnik-logo-64.png"
     },
     onClick: function() {
         Services.wm.getMostRecentWindow('navigator:browser').BrowserOpenAddonsMgr('addons://detail/jid1-xJdHsGBXo4PEKA%40jetpack/preferences');
@@ -110,6 +110,23 @@ exports.main = function (options, callbacks) {
     }
 };
 
+function setConfiguration(worker) {
+    var data = {
+        htmlTemplate                 : Self.data.load("template.html"),
+        htmlTemplateCss              : Self.data.load("template.css"),
+        activateAxonWhenI            : SimplePrefs.prefs.activateAxonWhenI,
+        activateAxonWhileHoldingDown : SimplePrefs.prefs.activateAxonWhileHoldingDown,
+        // Wikipedia language selection (see package.json; list source: http://meta.wikimedia.org/wiki/List_of_Wikipedias)
+        mainWikipediaLanguageCode    : SimplePrefs.prefs.mainWikipediaLanguageCode,
+        secondWikipediaLanguageCode  : SimplePrefs.prefs.secondWikipediaLanguageCode,
+        secondWikipediaHotkey        : SimplePrefs.prefs.secondWikipediaHotkey,
+        isWikipediaOnlyEnabled       : SimplePrefs.prefs.isWikipediaOnlyEnabled,
+        isRandomExampleEnabled       : SimplePrefs.prefs.isRandomExampleEnabled
+    };
+
+    worker.port.emit("setConfiguration", data);
+}
+
 PageMod.PageMod({
 
    include: "*",
@@ -118,24 +135,16 @@ PageMod.PageMod({
    attachTo: ["top", "frame", "existing"],
    onAttach: function(worker) {
 
-        worker.port.on("getConfigurationAndTemplate", function(response) {
-            var data = {
-                htmlTemplate: Self.data.load("template.html"),
-                htmlTemplateCss: Self.data.load("template.css"),
-                isRandomExampleEnabled: SimplePrefs.prefs.isRandomExampleEnabled,
-                isWikipediaOnlyEnabled: SimplePrefs.prefs.isWikipediaOnlyEnabled,
-                // Wikipedia language selection (see package.json; list source: http://meta.wikimedia.org/wiki/List_of_Wikipedias)
-                mainWikipediaLanguageCode: SimplePrefs.prefs.mainWikipediaLanguageCode,
-                immediateLookupWikipediaLanguageCode: SimplePrefs.prefs.immediateLookupWikipediaLanguageCode,
-                hotkey: SimplePrefs.prefs.hotkey
-            };
-            worker.port.emit(response.onComplete, data);
+        setConfiguration(worker);
+
+        SimplePrefs.on("", function () {
+            setConfiguration(worker);
         });
 
         // Receive HTTP GET requests from contentScriptFile
         worker.port.on("sendGetRequest", function(getRequest) {
 
-            var searchKeyword = getRequest.keyword;
+            var urlSearchString = encodeURIComponent(getRequest.searchString);
             var commonResourceName = "";
             var url = "";
 
@@ -143,8 +152,9 @@ PageMod.PageMod({
 
                 case "wordnikDefinitions":
                     commonResourceName = "Wordnik definition";
-                    url = getWordnikURL(searchKeyword, "/definitions",
-                            ["limit=1",
+                    url = getWordnikURL(urlSearchString, "/definitions",
+                            ["sourceDictionaries="+SimplePrefs.prefs.wordnikDictionary,
+                             "limit=1",
                              "includeRelated=true",
                              "useCanonical=true",
                              "includeTags=false"]);
@@ -152,20 +162,20 @@ PageMod.PageMod({
 
                 case "wordnikAudio":
                     commonResourceName = "Wordnik audio";
-                    url = getWordnikURL(searchKeyword, "/audio",
+                    url = getWordnikURL(urlSearchString, "/audio",
                             ["useCanonical=true",
                              "limit=50"]);
                     break;
 
                 case "wordnikTopExample"://unused
                     commonResourceName = "Wordnik top example";
-                    url = getWordnikURL(searchKeyword, "/topExample",
+                    url = getWordnikURL(urlSearchString, "/topExample",
                             ["useCanonical=true"]);
                     break;
 
                 case "wordnikExamples":
                     commonResourceName = "Wordnik example";
-                    url = getWordnikURL(searchKeyword, "/examples",
+                    url = getWordnikURL(urlSearchString, "/examples",
                             ["includeDuplicates=false",
                              "useCanonical=true",
                              "skip=0",
@@ -180,7 +190,7 @@ PageMod.PageMod({
                              "format=json",
                              "redirects=",
                              "continue=",
-                             "titles="+searchKeyword]);
+                             "titles="+urlSearchString]);
                     break;
 
                 case "wiktionaryAudioFileURL":
@@ -191,7 +201,7 @@ PageMod.PageMod({
                              "iiprop=url", 
                              "format=json", 
                              "continue=", 
-                             "titles="+searchKeyword]);
+                             "titles="+urlSearchString]);
                     break;
 
                 case "wikipediaExtract":
@@ -203,7 +213,7 @@ PageMod.PageMod({
                              "exchars=2048",
                              "redirects=",
                              "continue=",
-                             "titles="+searchKeyword]);
+                             "titles="+urlSearchString]);
                     break;
 
                 case "wikipediaParsedPageDisplayTitle":
@@ -212,7 +222,7 @@ PageMod.PageMod({
                             ["action=parse",
                              "prop=displaytitle",
                              "format=json",
-                             "page="+searchKeyword]);
+                             "page="+urlSearchString]);
                     break;
 
                 case "wikipediaSuggestion":
@@ -225,7 +235,7 @@ PageMod.PageMod({
                              "format=json",
                              "srlimit=1",
                              "continue=",
-                             "srsearch="+searchKeyword]);
+                             "srsearch="+urlSearchString]);
                     break;
 
                 default:

@@ -10,13 +10,13 @@
 }
 
 #axon-annotation-container a, #axon-example-container a {
-        color:#000878;
+        color:#000444;
 	text-decoration: none;
         outline: 0;
 }
 
 #axon-annotation-container a:visited, #axon-example-container a:visited {
-        color:#000878;
+        color:#000444;
 }
 
 #axon-annotation-container a:hover, #axon-example-container a:hover {
@@ -30,7 +30,7 @@
 #annotation-main {
 	border: 1px solid #999;
 	border-radius: 4px;
-	box-shadow: 0 0 15px rgba(0,0,0,0.5);
+	box-shadow: 0 0 18px rgba(3,4,7,0.4);
 	color: #222;
         font-family: Verdana, Geneva, sans-serif;
 	font-size: 14px;
@@ -70,6 +70,7 @@
 
 #annotation-title-row {
 	margin-bottom: 9px;
+	background-color: inherit;
 }
 
 #annotation-title,#annotation-audio-icon {
@@ -77,6 +78,7 @@
 	height: 20px;
 	line-height: 20px;
 	vertical-align: top;
+	background-color: inherit;
 }
 
 #annotation-title {
@@ -85,6 +87,7 @@
 	font-weight: bold;
         display: inline;
         word-break: break-word;
+	background-color: inherit;
 }
 
 #annotation-audio-icon {
@@ -105,6 +108,7 @@
         font-family: Verdana, Geneva, sans-serif;
 	font-size: 14px;
 	line-height: 1.3;
+	background-color: inherit;
 }
 
 /* Wikipedia */
@@ -121,6 +125,7 @@
         font-family: Verdana, Geneva, sans-serif;
         font-size: 14px;
         text-align: left;
+	background-color: inherit;
 }
 
 #annotation-definition ul {
@@ -133,6 +138,7 @@
         padding: 3px;
         font-family: Verdana, Geneva, sans-serif;
         font-size: 14px;
+	background-color: inherit;
 }
 
 
@@ -141,19 +147,22 @@
         font-size: 14px;
 	font-style: italic;
 	margin: 10px 0 0 10px;
+	background-color: inherit;
 }
 
 #annotation-more,#annotation-attribution {
         font-family: Verdana, Geneva, sans-serif;
 	font-size: 12px;
 	line-height: 1.3;
+	background-color: inherit;
 }
 
 #annotation-more {
-	margin-top: 8px;
+	margin-top: 10px;
 	float: right;
 	word-break: break-all;
         margin-right:5px;
+	background-color: inherit;
 }
 
 #annotation-attribution {
@@ -164,21 +173,24 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	width: 230px;
+	background-color: inherit;
 }
 
 #annotation-attribution a {
 	color: #004778;
+	background-color: inherit;
 }
 
 #annotation-tail-main {
 	position: absolute;
 	z-index: 99998;
+	background-color: inherit;
 }
 
 #annotation-tail-inner-up,#annotation-tail-inner-down {
 	background: transparent;
-	border-left: 11px solid transparent;
-	border-right: 11px solid transparent;
+	border-left: 8px solid transparent;
+	border-right: 8px solid transparent;
 	left: 2px;
 	position: absolute;
 	width: 0;
@@ -186,29 +198,29 @@
 }
 
 #annotation-tail-inner-up {
-	border-bottom: 11px solid #fcfbf8;
-	top: 2px;
+	border-bottom: 8px solid #fcfbf8;
+	top: 1px;
 }
 
 #annotation-tail-inner-down {
-	border-top: 11px solid #fcfbf8;
+	border-top: 8px solid #fcfbf8;
 }
 
 #annotation-tail-outer-up,#annotation-tail-outer-down {
 	background: transparent;
-	border-left: 13px solid transparent;
-	border-right: 13px solid transparent;
+	border-left: 10px solid transparent;
+	border-right: 10px solid transparent;
 	left: 0;
 	position: absolute;
 	width: 0;
 }
 
 #annotation-tail-outer-up {
-	border-bottom: 13px solid #999;
+	border-bottom: 9px solid #999;
 }
 
 #annotation-tail-outer-down {
-	border-top: 13px solid #999;
+	border-top: 9px solid #999;
 }
 
 .nytd_selection_button {
@@ -224,7 +236,7 @@
 #example-main {
 	border: 1px solid #999;
 	border-radius: 4px;
-	box-shadow: 0 0 15px rgba(0,0,0,0.5);
+	box-shadow: 0 0 18px rgba(3,4,7,0.4);
 	color: #222;
         font-family: Verdana, Geneva, sans-serif;
 	font-size: 14px;
@@ -262,6 +274,7 @@
 	font-style: italic;
 	font-size: 14px;
 	margin: 5px 5px 7px 10px;
+	background-color: inherit;
 }
 
 #example-text span.boldItalic {
@@ -273,19 +286,18 @@
         font-family: Verdana, Geneva, sans-serif;
 	font-size: 12px;
 	line-height: 1.3;
-}
-
-#example-attribution {
 	float: left;
 	margin: 3px 9px 7px 10px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	width: 240px;
+	background-color: inherit;
 }
 
 #example-attribution a {
 	color: #004778;
+	background-color: inherit;
 }
 
 #example-tail-main {
@@ -295,8 +307,8 @@
 
 #example-tail-inner-left,#example-tail-inner-right {
 	background: transparent;
-	border-bottom: 11px solid transparent;
-	border-top: 11px solid transparent;
+	border-bottom: 8px solid transparent;
+	border-top: 8px solid transparent;
 	position: absolute;
 	width: 0;
 	z-index: 99999;
@@ -308,30 +320,31 @@
 
 #example-tail-inner-right {
 	left: 0px;
+	top: 2px;
 }
 
 #example-tail-inner-left {
-	border-right: 11px solid #fcfbf8;
+	border-right: 8px solid #fcfbf8;
 	top: 2px;
 }
 
 #example-tail-inner-right {
-	border-left: 11px solid #fcfbf8;
+	border-left: 8px solid #fcfbf8;
 }
 
 #example-tail-outer-left,#example-tail-outer-right {
 	background: transparent;
-	border-bottom: 13px solid transparent;
-	border-top: 13px solid transparent;
+	border-bottom: 10px solid transparent;
+	border-top: 10px solid transparent;
 	left: 0;
 	position: absolute;
 	width: 0;
 }
 
 #example-tail-outer-left {
-	border-right: 13px solid #999;
+	border-right: 10px solid #999;
 }
 
 #example-tail-outer-right {
-	border-left: 13px solid #999;
+	border-left: 9px solid #999;
 }
