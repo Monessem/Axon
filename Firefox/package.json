@@ -5,7 +5,7 @@
     "description": "Axon provides access to the Wordnik dictionary and all Wikipedia articles in every language. \n\nDouble-click on a word to open the Wordnik dictionary definition in a speech balloon. If the word could not be found Axon continues on Wikipedia. To search Wikipedia immediately, hold down the hotkey and double-click on a word.",
     "author": "Ivo van Kamp",
     "license": "GPL 3",
-    "version": "0.8",
+    "version": "0.9",
     "icon": "./data/Images/Wordnik-logo-64.png",
     "preferences": [
     {
@@ -13,7 +13,7 @@
         "type"       : "radio",
         "title"      : "Activate Axon when I",
         "description": "",
-        "value"      : "dblclick",
+        "value"      : "mouseup",
         "options": [
             {
                 "value": "dblclick",
@@ -30,7 +30,7 @@
         "type"       : "radio",
         "title"      : "while holding down",
         "description": "",
-        "value"      : "none",
+        "value"      : "alt",
         "options": [
             {
                 "value": "ctrl",
@@ -2414,7 +2414,7 @@
         "type"       : "menulist",
         "title"      : "Hotkey second Wikipedia",
         "description": "Select a hotkey to search the second Wikipedia",
-        "value"      : "disable",
+        "value"      : "ctrl",
         "options": [
             {
                 "value": "disable",

@@ -97,19 +97,6 @@ function sendXHRrequest(worker, url, commonResourceName, getRequest) {
     xhr.send();
 }
 
-// Only need to attach listeners.js when Firefox starts with tabs
-// from last time because PageMod contentScriptFile sometimes doesn't get
-// executed in this case (Firefox 35.0). PageMod does attach the worker.
-exports.main = function (options, callbacks) {
-    if (options.loadReason==="startup") {
-        for (let tab of Tabs) {
-            tab.attach({
-                contentScriptFile: Self.data.url("listeners.js")
-            });
-        }
-    }
-};
-
 function setConfiguration(worker) {
     var data = {
         htmlTemplate                 : Self.data.load("template.html"),
@@ -137,6 +124,7 @@ PageMod.PageMod({
 
         setConfiguration(worker);
 
+        // Inject configuration when changed
         SimplePrefs.on("", function () {
             setConfiguration(worker);
         });
@@ -190,7 +178,7 @@ PageMod.PageMod({
                              "format=json",
                              "redirects=",
                              "continue=",
-                             "titles="+urlSearchString]);
+                             "titles="+urlSearchString.toLowerCase()]);
                     break;
 
                 case "wiktionaryAudioFileURL":
