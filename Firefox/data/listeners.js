@@ -64,8 +64,7 @@
 
     // Function from jQuery JavaScript Library v1.11.2
     function isEmpty( obj ) {
-        var name;
-        for ( name in obj ) {
+        for (let name in obj ) {
             return false;
         }
         return true;
@@ -299,7 +298,7 @@
         if (global.mustCancelOperations === true) return;
         response = JSON.parse(response);
 
-        var pageKey = response!=null && Object.keys(response.query.pages)[0] || -1;
+        var pageKey = response!==null && Object.keys(response.query.pages)[0] || -1;
 
         if (pageKey!=="-1") {
 
@@ -409,6 +408,10 @@
         // Wikipedia definitions start with bold. Remove bold tags
         // because the title above is already bold.
         text = text.replace(/(<b>)([^]*?)(<\/b>)/gi, "$2");
+
+        // Wikipedia extracts sometimes return with empty paragraphs
+        // probably left over after removal of hatnotes.
+        text = text.replace(/<p><br \/><\/p>/gi, "");
 
         return text;
     }
@@ -553,7 +556,7 @@
 
             if ( i>3 && c===" " ) return true;
 
-            // IP<3 hone>3
+            // IP<3 hone>=3
             if ( c!==( i<3 ? c.toUpperCase() : c.toLowerCase() ) || !isCharacterAlpha(c) )
                 return false;
         }
@@ -797,63 +800,46 @@
         }
     }
 
-    function getUniqueNumber() {
-        var i, uniqueNumber = new Date().getTime().toString(32);
-        for (i = 0; i < 12; i++) {
-            uniqueNumber += Math.floor(Math.random() * 65535).toString(32);
+    function getDimensions(rect) {
+        var data = {
+            "top"            : window.scrollY + rect.top,
+            "right"          : rect.left + rect.width,
+            "bottom"         : window.scrollY + rect.top + rect.height,
+            "left"           : rect.left,
+            "leftCenter"     : rect.left + rect.width/2
+        };
+        return data;
+    }
+
+    function isElementInsideRect(element, boundingRect) {
+
+        if (element!==null && boundingRect!==null) {
+
+            var rectElement = element.getBoundingClientRect();
+            var a = getDimensions(rectElement);
+            var b = getDimensions(boundingRect);
+            // if b is inside a return true
+            if (b.top >= a.top && b.bottom <= a.bottom && b.left >= a.left && b.right <= a.right)
+                return true;
         }
-        return uniqueNumber;
+        return false;
     }
 
     function getSelectedTextPosition(Range) {
 
-        var id = getUniqueNumber();
-        var containerID = "selectedTextContainer-"+id;
+        var rectSelection = Range.getBoundingClientRect();
 
-        try {
-            var rect = Range.getBoundingClientRect();
-            var selectionBackup = Range.cloneContents();
-            var newSpanElement = document.createElement('span');
-            newSpanElement.id = containerID;
-
-            // Following statement sometimes fails to enclose <i>word</i>
-            Range.surroundContents(newSpanElement);
-        }
-        catch(error) {
-            return null;
-        }
-
-        var containerElement = document.getElementById(containerID);
-        var pos = getPositionOfDomElement(containerElement);
-
-        var i=3;
-        var tmpNode = containerElement.parentNode;
         // The prefix 'is' should be used for boolean variables and methods. 
         // (Java Programming Style Guidelines - http://geosoft.no/development/javastyle.html)
-        var isInsideBubble = false; // Selected text is inside the dictionary speech bubble.
+        var isInsideAnAxonBubble = isElementInsideRect(document.getElementById("annotation-main"), rectSelection);
 
-        while (i-->0) {
-            tmpNode = tmpNode.parentNode;
-            if (tmpNode.id==="annotation-main" || tmpNode.id==="example-main")
-                isInsideBubble = true;
-        }
+        if (isInsideAnAxonBubble===false)
+            isInsideAnAxonBubble = isElementInsideRect(document.getElementById("example-main"), rectSelection);
 
-        // Insert the original HTML text before the selected text container
-        containerElement.parentNode.insertBefore(selectionBackup, containerElement);
+        var selectionDimensions = getDimensions(rectSelection);
+        selectionDimensions.isInsideAnAxonBubble = isInsideAnAxonBubble;
 
-        // Remove the selected text container to restore the document to its original state
-        containerElement.parentNode.removeChild(containerElement);
-
-        var data = {
-            "top"            : pos.top,
-            "right"          : pos.left + rect.width,
-            "bottom"         : pos.top + rect.height,
-            "left"           : pos.left,
-            "leftCenter"     : pos.left + rect.width/2,
-            "isInsideBubble" : isInsideBubble
-        };
-
-        data.equals = function(objectB) {
+        selectionDimensions.equals = function(objectB) {
             var _this = this;
             var objectsAreEqual = true;
             Object.keys(this).forEach(function(key) {
@@ -862,7 +848,7 @@
             });
             return objectsAreEqual;
         }
-        return data;
+        return selectionDimensions;
     }
 
     function filterSelectedText(text) {
@@ -871,10 +857,7 @@
         text = text.replace(/^\s+|\s+$/g, "");
 
         // Remove punctuation
-        text = text.replace(/[’'!"#$%\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
-
-        // If multiple words were selected in one Range use the first
-        //text = text.replace(/^([A-z]*)(\s+|$).*/,"$1");
+        text = text.replace(/[’'!"#$%\\'()\*+,\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
 
         // Change the text to lower case and return it
         return text;
@@ -1011,7 +994,7 @@
 
         // If a text inside the dictionary bubble was selected then
         // keep the old selected text position.
-        if (selectedTextPosition.isInsideBubble) {
+        if (selectedTextPosition.isInsideAnAxonBubble) {
             selectedTextPosition = global.selectedTextPosition;
             // Hide example text bubble
             document.getElementById('axon-example-container').className = "displayNone";

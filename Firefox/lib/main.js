@@ -19,15 +19,12 @@
 
 "use strict";
 
-const Request     = require("sdk/request");
-const PageMod     = require("sdk/page-mod");
 const Self        = require("sdk/self");
 const Buttons     = require("sdk/ui/button/action");
 const Tabs        = require("sdk/tabs");
-const Panel       = require("sdk/panel");
 const SimplePrefs = require("sdk/simple-prefs");
 const NetXHR      = require("sdk/net/xhr");
-
+const {PageMod}   = require("sdk/page-mod");
 const {Cu}        = require('chrome');
 const {Services}  = Cu.import('resource://gre/modules/Services.jsm');
 
@@ -114,7 +111,7 @@ function setConfiguration(worker) {
     worker.port.emit("setConfiguration", data);
 }
 
-PageMod.PageMod({
+PageMod({
 
    include: "*",
    contentScriptFile: Self.data.url("listeners.js"),

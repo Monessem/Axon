@@ -1,3 +1,9 @@
+15-feb-2015
+   Version 1.0
+        - Remove empty paragraphs from Wikipedia extracts (hatnote leftover?)
+        - Removed selected text Range.surroundContents(). Replaced element based
+          isInsideBubble check with comparison of coordinates.
+
 14-feb-2015
    Version 0.9
         - Small bugfix: changed Wiktionary audio search title to lowercase.
