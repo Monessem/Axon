@@ -74,7 +74,6 @@
 }
 
 #annotation-title,#annotation-audio-icon {
-	display: inline-block;
 	height: 20px;
 	line-height: 20px;
 	vertical-align: top;
@@ -82,6 +81,7 @@
 }
 
 #annotation-title {
+        display:inline;
         font-family: Verdana, Geneva, sans-serif;
 	font-size: 16px;
 	font-weight: bold;
@@ -93,6 +93,7 @@
 	background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAOCAYAAADwikbvAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAARCQAAEQkAGJrNK4AAAAB3RJTUUH3wEdDx4f4rrXvwAAAURJREFUKM+l0jGIz2EcBvDP/fwpGWSlbBajp4sMJ6VYJNMtFhZnMVAuKXWDRDFeZzLcZDS5QckNCn2NFpMus0gMl1jen35+fpvv9L7v8z7f9/s+z8NEJVlOspKk3w+xP+vZBPE4TmGrP6sqSR7hAk7iDXQj4j4sNvJfVVWXsYbXSRZglkRV9Xfu4MqoIWzgYlVdT/IFL5PsmktyF/P4jrMD3mNcausNnMbeqvqa5CPWu/aHYyMiLOBAG/kM3mG1YQ9xvsMcdk+I/gH3BqPfx7mGvcXhzn9Uh1/4MYEdwnJvFW7gacPm8X6GF/g2IdgmPrWxn+FI0weuYX2Gm71VSVbHVmEHdmJ/U/o2DmJlNvAYbmEbVwfh+NmHJsmD9uqJqtruRin6jCd4PhHbNSzhaFVt/hPP1uBVI28NU1ZVS1W1p881/AbZOWteEwsJ5QAAAABJRU5ErkJggg==');
 	background-position: center;
 	background-repeat: no-repeat;
+        display:inline-block;
 	cursor: pointer;
 	margin-left: 8px;
 	opacity: 0.6;
@@ -346,4 +347,32 @@
 
 #example-tail-outer-right {
 	border-left: 9px solid #999;
+}
+
+/* Google Maps */
+#axon-map-canvas {
+	border: 1px solid #CCCCCC;
+	border-radius: 4px;
+        width: 270px;
+        height: 203px;
+        margin: 10px 5px 13px 5px;
+        border: 1px solid #BBB;
+}
+
+#axon-map-canvas .gm-style img {
+        /* button sprite fix on nytimes.com */
+        max-width: none;
+}
+
+#axon-map-canvas .gm-login-iframe {
+        display: none;
+}
+
+#axon-map-canvas .gm-style-cc div:first-child {
+        opacity: 1;
+}
+
+#axon-map-canvas .gm-style-cc div:nth-child(2) a {
+        font-size: 12px;
+        font-weight:bold;
 }

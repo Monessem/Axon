@@ -21,18 +21,20 @@
 
 (function() {
  
-    var global                           = {};    // used by DOM and Worker listeners
-    global.dictionaryData                = {};    // dictionaryData variables are initialized in domListeners.js templateListener
-    global.config                        = {};    // container for add-on configuration parameters
-    global.config.runtime                = {};    // runtime configuration parameters
-    global.selectedTextPosition          = null;  // bounding dimensions of selected text
-    global.originalSelectedTextString    = "";    // unfiltered selected text
-    global.selectedTextString            = "";    // filtered selected text
-    global.suggestedTextString           = "";    // Wikipedia suggested correction to selectedTextString
-    global.isTextBubbleAboveSelectedText = true;  // whereabouts of definition speech bubble to correctly position example text
-    global.isTemplateLoaded              = false; // prevents loading template multiple times
-    global.mustCancelOperations          = false; // cancel calls in process after esc, close button, or clicking next to the speech bubbles
-    global.modifierKeyPressedString      = "";    // the modifier key held down during double-click
+    var global                           = {};      // used by DOM and Worker listeners
+    global.dictionaryData                = {};      // dictionaryData variables are initialized in domListeners.js templateListener
+    global.config                        = {};      // container for add-on configuration parameters
+    global.config.runtime                = {};      // runtime configuration parameters
+    global.selectedTextPosition          = null;    // bounding dimensions of selected text
+    global.originalSelectedTextString    = "";      // unfiltered selected text
+    global.selectedTextString            = "";      // filtered selected text
+    global.suggestedTextString           = "";      // Wikipedia suggested correction to selectedTextString
+    global.isTextBubbleAboveSelectedText = true;    // whereabouts of definition speech bubble to correctly position example text
+    global.isTemplateLoaded              = false;   // prevents loading template multiple times
+    global.mustCancelOperations          = false;   // cancel calls in process after esc, close button, or clicking next to the speech bubbles
+    global.hasAxonLoadedGoogleMaps       = false;   // flag indicating if Axon has loaded Google Maps
+    global.isAxonGoogleMapsFirstTime     = true;    // flag indicating whether Axon will be starting Google Maps for the first time
+    global.modifierKeyPressedString      = "";      // the modifier key held down during double-click (see MODIFIER_KEYS)
 
     // Wordnik dictionary titles
     const FULL_TITLE_AHD                 = "The American Heritage Dictionary 4E";
@@ -48,7 +50,7 @@
     const SEARCH_URL_CENTURY             = "http://www.micmap.org/dicfro/search/century-dictionary/";
     const SEARCH_URL_WORDNET             = "http://wordnetweb.princeton.edu/perl/webwn?s=";
 
-    // Wordnik and Wikipedia URLs
+    // Wordnik, Wikipedia and Google Maps URLs
     const SEARCH_URL_WORDNIK             = "https://www.wordnik.com/words/";
     const SEARCH_URL_WIKIPEDIA           = "https://{LANGUAGECODE}.wikipedia.org/wiki/";
     const SEARCH_URL_SPECIAL_WIKIPEDIA   = "https://{LANGUAGECODE}.wikipedia.org/wiki/Special:Search/";
@@ -61,6 +63,7 @@
     const NO_MATCH_FOUND_WIKI_ZONE       = ".wikipedia.org";
     const ENGLISH_LANGUAGE_CODE          = "en";
     const MODIFIER_KEYS                  = {"ctrl": "ctrlKey", "shift": "shiftKey", "alt": "altKey", "cmd": "metaKey"};
+    const UNIQUE_STRING                  = getUniqueString();
 
     // Function from jQuery JavaScript Library v1.11.2
     function isEmpty( obj ) {
@@ -76,11 +79,27 @@
         }
     }
 
+    function removeElementById(elementId) {
+        let element = document.getElementById(elementId);
+        if (element!=null && element.parentNode!==null)
+            element.parentNode.removeChild(element);
+    }
+
+    function getUniqueString() {
+        var i, uniqueString = new Date().getTime().toString(32);
+        for (i = 0; i < 12; i++) {
+            uniqueString += Math.floor(Math.random() * 65535).toString(32);
+        }
+        return uniqueString;
+    }
+
     function setAnnotationBubbleTextAndAudio() {
 
-        document.getElementById('axon-annotation-container').className = ""; // Remove class displayNone
         var annotationMore = document.getElementById('annotation-more');
         var annotationAttribution = document.getElementById('annotation-attribution');
+
+        // Remove class displayNone
+        document.getElementById('axon-annotation-container').className = "";
 
         if (global.dictionaryData.title==="") {
             document.getElementById('annotation-title-row').className = "displayNone";
@@ -167,7 +186,7 @@
         setAnnotationBubblePosition();
     };
 
-    function showExampleBubble(isSecondAttempt) {
+    function showExampleBubble(mayTryAgain) {
 
         // Display example block and set text in order to calculate height correctly
         document.getElementById('axon-example-container').className = "";
@@ -193,11 +212,11 @@
 
                 // If there is no room for the example above the selected text then try
                 // to reposition the definition bubble (once).
-                if ((typeof(isSecondAttempt)==="undefined" || isSecondAttempt===false) && 
+                if ((typeof(mayTryAgain)==="undefined" || mayTryAgain===true) && 
                     window.scrollY > (global.selectedTextPosition.top + mainOffset))
                 {
                     setAnnotationBubblePosition(true/*force direction down*/);
-                    showExampleBubble(true);
+                    showExampleBubble(false);
                     return;
                 }
             }
@@ -228,6 +247,7 @@
             if (!canExampleFitNextToAnnotation)
                 document.getElementById('axon-example-container').className = "displayNone";
         }
+
     };
 
     self.port.on("wordnikExamplesListener", function(examplesResponse) {
@@ -256,9 +276,9 @@
 
             global.dictionaryData.exampleTitle = randomExample.title;
             global.dictionaryData.exampleURL = randomExample.url;
+
             showExampleBubble();
         }
-
     });
 
     function getFileExtension(filename) {
@@ -289,7 +309,7 @@
             var fileURL = page.imageinfo[0].url;
             global.dictionaryData.audioFileURL = fileURL;
             // Show speaker symbol. Click symbol to play file.
-            showAnnotationBubble();
+            setAnnotationBubbleTextAndAudio();
         }
     });
 
@@ -345,7 +365,7 @@
         audioResponse = JSON.parse(audioResponse);
         var macmillan = null;
 
-        if (audioResponse!==null) {
+        if (!isEmpty(audioResponse)) {
 
             audioResponse.forEach(function(element, index, array) {
 
@@ -372,7 +392,7 @@
             });
         }
         else {
-            showAnnotationBubble();
+            setAnnotationBubbleTextAndAudio();
         }
     });
 
@@ -456,6 +476,173 @@
             }
         }
     });
+
+    function getGoogleMapsScriptElements(callback) {
+
+        var allScriptTags = document.getElementsByTagName("script");
+        // Fast loop: http://jsperf.com/for-vs-foreach/32
+        for (let i=allScriptTags.length-1; i>=0; --i) {
+            var isGoogleMapsScript = ["maps.googleapis.com", "maps.gstatic.com", "maps.google.com"].some(
+                function(URL) {
+                    if (allScriptTags[i]!==null && allScriptTags[i].src!==null) {
+                        return allScriptTags[i].src.indexOf(URL)!==-1;
+                    }
+                }
+            );
+            if (isGoogleMapsScript) {
+                if (callback(allScriptTags[i])===false) break;
+            }
+        }
+    }
+
+    function removeGoogleMapScripts() {
+        getGoogleMapsScriptElements(function(element) {
+            element.parentNode.removeChild(element);
+            return true; // continue
+        });
+    }
+
+    function hasAxonLoadedGoogleMaps() {
+
+        if (global.isAxonGoogleMapsFirstTime===false) {
+            var indicatorDiv = document.getElementById(UNIQUE_STRING);
+            if (indicatorDiv!==null) {
+                var indicator = JSON.parse(indicatorDiv.innerHTML);
+                global.hasAxonLoadedGoogleMaps = !indicator.isGoogleMapsInUseByWebsite;
+            }
+        }
+        return global.hasAxonLoadedGoogleMaps;
+    }
+
+    function unloadGoogleMaps() {
+
+        // What is the proper way to destroy a map instance?
+        // http://stackoverflow.com/questions/10485582/what-is-the-proper-way-to-destroy-a-map-instance
+        // https://www.youtube.com/watch?v=rUYs765QX-8&feature=plcp 12:50
+
+        removeGoogleMapScripts();
+
+        var googleMapsIFrame = document.getElementsByName("gm-master")[0];
+        if (typeof(googleMapsIFrame)!=='undefined' &&
+            googleMapsIFrame.src.indexOf("www.google.com")!==-1)
+        {
+            googleMapsIFrame.parentNode.removeChild(googleMapsIFrame);
+        }
+
+        removeElementById("axonStartGoogleMapsScript");
+        removeElementById("axonGoogleMapsInitializationScript");
+
+        // Sometimes multiple axon-map-canvas divs in container
+        // caused by fast successive mouse clicks.
+        var canvasContainer = document.getElementById('axon-map-canvas-container');
+        emptyElement(canvasContainer);
+    }
+
+    self.port.on("googleMapsGeocodeListener", function(response) {
+
+        if (global.mustCancelOperations === true) return;
+        var response = JSON.parse(response);
+
+        if (!isEmpty(response) && response.results.length>0) {
+
+            let mapResult = response.results[0];
+            let mapAddress = mapResult.address_components;
+            let mapLocation = mapResult.geometry.location;
+            if (mapAddress.length<1) return;
+            var addressLongName = mapAddress[0].long_name;
+            var showLocationInGoogleMaps = false;
+
+            switch (global.config.startGoogleMapsCondition) {
+
+                // The selected text is a state, country, municipality, community, large civil entity, natural feature or point of interest"
+                case "countryCityNaturalFeaturePOI":
+                    if (mapAddress[0].types.indexOf("point_of_interest")!==-1 ||
+                       (typeof(mapAddress[1])!=='undefined' &&
+                        mapAddress[1].types.some(function(element) {
+                            // a large first-order civil entity below a locality (e.g. Yosemite)
+                            return element.indexOf("sublocality_level_1")!==-1;
+                        })))
+                    {
+                        showLocationInGoogleMaps = true;
+                    }
+                    //nobreak
+
+                // The selected text is a country, state, municipality, community (unincorporated area), or natural feature
+                case "countryCityNaturalFeature": 
+                    if (// Any administrative area below the country
+                        mapAddress[0].types.some(function(element) { return element.indexOf("administrative_area_level")!==-1; }) ||
+                        // Borough (e.g. Manhattan)
+                        mapAddress[0].types.indexOf("sublocality_level_1")!==-1 ||
+                        // Municipality / community
+                        ["locality","political"].every(function(element) { return mapAddress[0].types.indexOf(element)!==-1;}) &&
+                        typeof(mapAddress[1])!=='undefined' &&
+                        mapAddress[1].types.some(function(element) { 
+                            // an administrative area (civil entity below country level)
+                            return element.indexOf("administrative_area_level")!==-1 || element.indexOf("country")!==-1 //e.g. Istanbul
+                        }))
+                    {
+                        showLocationInGoogleMaps = true;
+                    }
+                    //nobreak
+
+                case "countryNaturalFeature":
+                    // The selected text is a natural feature (includes continents) or a country 
+                    if (mapAddress[0].types.indexOf("natural_feature")!==-1 || 
+                        mapAddress[0].types.indexOf("country")!==-1 ||
+                        // State
+                        mapAddress[0].types.indexOf("administrative_area_level_1")!==-1)
+                    {
+                        showLocationInGoogleMaps = true;
+                    }
+                    break;
+
+                case "any":
+                    // Exclude buildings and routes
+                    // See also: https://developers.google.com/maps/documentation/geocoding/
+                    showLocationInGoogleMaps = ['premise','subpremise','route'].every(function(element) {
+                        return (mapAddress[0].types.indexOf(element)===-1);
+                    });
+                    break;
+            }
+
+            if (showLocationInGoogleMaps) {
+
+                var newScriptElement = document.createElement('script');
+                newScriptElement.id = "axonGoogleMapsInitializationScript";
+
+                var data = {};
+                data.coordinates     = mapLocation;
+                data.zoomLevelBubble = global.config.axonGoogleMapsInExampleBubbleZoomLevel;
+                data.zoomLevelMaps   = global.config.axonGoogleMapsOpenInNewTabZoomLevel;
+                data.addressLongName = addressLongName;
+                data.uniqueString    = UNIQUE_STRING;
+                data.isFirstTime     = global.isAxonGoogleMapsFirstTime;
+
+                if (global.isAxonGoogleMapsFirstTime===true) {
+                    global.isAxonGoogleMapsFirstTime = false;
+                }
+
+                var js = "window.axonData="+JSON.stringify(data)+";"+global.config.htmlGmapJS;
+                insertTextIntoElement(js, newScriptElement);
+                document.getElementsByTagName('head')[0].appendChild(newScriptElement);
+
+                showExampleBubble();
+            }
+
+        }
+    });
+
+    function getGoogleMapIfEnabled() {
+
+        if (global.config.startGoogleMapsCondition!=="disable")
+        {
+            self.port.emit("sendGetRequest", {
+                type         : "googleMapsGeocode",
+                searchString : global.dictionaryData.title,
+                onComplete   : "googleMapsGeocodeListener"
+            });
+        }
+    }
 
     function getRandomExampleIfEnabled() {
 
@@ -571,6 +758,7 @@
 
         showAnnotationBubble();
         getPronunciation();
+        getGoogleMapIfEnabled();
         getRandomExampleIfEnabled();
     });
 
@@ -631,13 +819,14 @@
                 else {
                     showAnnotationBubble();
                     getPronunciation();
+                    getGoogleMapIfEnabled();
                     getRandomExampleIfEnabled();
                 }
             }
         }
     });
 
-    self.port.on("definitionListener", function(definitionResponse) {
+    self.port.on("wordnikDefinitionsListener", function(definitionResponse) {
 
         if (global.mustCancelOperations === true) return;
         definitionResponse = JSON.parse(definitionResponse);
@@ -685,6 +874,7 @@
 
             // After the size of the definition bubble is known,
             // position the example bubble relative to it.
+            getGoogleMapIfEnabled();
             getRandomExampleIfEnabled();
         }
         else {
@@ -693,20 +883,17 @@
     });
 
     function closeTextBubbles() {
+
         if (global.isTemplateLoaded) {
-            var exampleContainer = document.getElementById('axon-example-container');
-            var annotationContainer = document.getElementById('axon-annotation-container');
-            var styleContainer = document.getElementById('axon-style-container');
 
-            if (exampleContainer!==null)
-                exampleContainer.parentNode.removeChild(exampleContainer);
+            // Try to unload Google Maps if it was not loaded
+            // by the website itself.
+            if (hasAxonLoadedGoogleMaps())
+                unloadGoogleMaps();
 
-            if (annotationContainer!==null)
-                annotationContainer.parentNode.removeChild(annotationContainer);
-
-            if (styleContainer!==null)
-                styleContainer.parentNode.removeChild(styleContainer);
-
+            removeElementById('axon-example-container');
+            removeElementById('axon-annotation-container');
+            removeElementById('axon-style-container');
             global.isTemplateLoaded = false;
         }
     }
@@ -738,6 +925,7 @@
     }
 
     function loadTemplate(data) {
+
 
         var newStyleElement = document.createElement('style');
         newStyleElement.id = "axon-style-container";
@@ -784,22 +972,6 @@
         });
     }
 
-    /* Find position of DOM element (http://www.quirksmode.org/js/getPositionOfDomElement.html). */
-    function getPositionOfDomElement(domElement) {
-
-        var curleft = 0, curtop = 0;
-
-        if (domElement.offsetParent) {
-
-            do {
-                curleft += domElement.offsetLeft;
-                curtop += domElement.offsetTop;
-            } while (domElement = domElement.offsetParent);
-
-            return {"top": curtop, "left": curleft};
-        }
-    }
-
     function getDimensions(rect) {
         var data = {
             "top"            : window.scrollY + rect.top,
@@ -811,16 +983,21 @@
         return data;
     }
 
-    function isElementInsideRect(element, boundingRect) {
+    function isRectAInsideRectB(rectA, rectB) {
+        var a = getDimensions(rectA);
+        var b = getDimensions(rectB);
+        // if a is inside b return true
+        if (a.top >= b.top && a.bottom <= b.bottom && a.left >= b.left && a.right <= b.right)
+            return true;
+        else
+            return false;
+    }
+
+    function isRectInsideElement(boundingRect, element) {
 
         if (element!==null && boundingRect!==null) {
-
             var rectElement = element.getBoundingClientRect();
-            var a = getDimensions(rectElement);
-            var b = getDimensions(boundingRect);
-            // if b is inside a return true
-            if (b.top >= a.top && b.bottom <= a.bottom && b.left >= a.left && b.right <= a.right)
-                return true;
+            return isRectAInsideRectB(boundingRect, rectElement);
         }
         return false;
     }
@@ -831,22 +1008,23 @@
 
         // The prefix 'is' should be used for boolean variables and methods. 
         // (Java Programming Style Guidelines - http://geosoft.no/development/javastyle.html)
-        var isInsideAnAxonBubble = isElementInsideRect(document.getElementById("annotation-main"), rectSelection);
+        var isInsideAnAxonBubble = isRectInsideElement(rectSelection, document.getElementById("annotation-main"));
 
         if (isInsideAnAxonBubble===false)
-            isInsideAnAxonBubble = isElementInsideRect(document.getElementById("example-main"), rectSelection);
+            isInsideAnAxonBubble = isRectInsideElement(rectSelection, document.getElementById("example-main"));
 
         var selectionDimensions = getDimensions(rectSelection);
         selectionDimensions.isInsideAnAxonBubble = isInsideAnAxonBubble;
 
         selectionDimensions.equals = function(objectB) {
-            var _this = this;
-            var objectsAreEqual = true;
-            Object.keys(this).forEach(function(key) {
+            let _this = this;
+            let keys = Object.keys(this);
+            for (let i=0, len = keys.length; i<len; ++i) {
+                let key = keys[i];
                 if (typeof(_this[key])!=='function')
-                    if (_this[key]!==objectB[key]) objectsAreEqual=false;
-            });
-            return objectsAreEqual;
+                    if (_this[key]!==objectB[key]) return false;
+            }
+            return true;
         }
         return selectionDimensions;
     }
@@ -857,7 +1035,7 @@
         text = text.replace(/^\s+|\s+$/g, "");
 
         // Remove punctuation
-        text = text.replace(/[’'!"#$%\\'()\*+,\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
+        text = text.replace(/[!"#$%\\()\*+,\.\/:;<=>?@\[\\\]\^_`{|}~]/g,"");
 
         // Change the text to lower case and return it
         return text;
@@ -881,11 +1059,10 @@
             self.port.emit("sendGetRequest", {
                 type         : "wordnikDefinitions",
                 searchString : global.suggestedTextString || global.selectedTextString,
-                onComplete   : "definitionListener"
+                onComplete   : "wordnikDefinitionsListener"
             });
         }
     }
-
 
     /* Initialize dictionaryData. Holds data fetched from external resources (Wordnik/Wikipedia). */
     function initializeDictionaryData() {
@@ -912,32 +1089,40 @@
         global.config = data;
         global.config.runtime = runtime;
     });
- 
+
+    function isMouseClickInsideGoogleMap(e) {
+
+        var isMouseClickInsideGoogleMap = false;
+        var axonMapCanvasElement = document.getElementById("axon-map-canvas");
+
+        if (axonMapCanvasElement!==null) {
+
+            let x = e.clientX;
+            let y = e.clientY;
+            let canvasRect = axonMapCanvasElement.getBoundingClientRect();
+
+            let c = {
+                top: canvasRect.top,
+                left: canvasRect.left,
+                right: canvasRect.left + canvasRect.width,
+                bottom: canvasRect.top + canvasRect.height
+            }
+
+            isMouseClickInsideGoogleMap = (y >= c.top && y <= c.bottom && x >= c.left && x <= c.right);
+        }
+        return isMouseClickInsideGoogleMap;
+    }
+
     function wasHotkeyPressed(hotkey) {
         return (global.modifierKeyPressedString===hotkey);
     }
 
     function getModifierKeyFromEvent(e) {
-        var keyPressed = "none";
-        Object.keys(MODIFIER_KEYS).forEach(function(key) {
-            if (e[MODIFIER_KEYS[key]]) keyPressed = key;
-        });
-        return keyPressed;
-    }
-
-    var htmlElement = document.getElementsByTagName('html')[0];
-    if (typeof htmlElement!=="undefined") {
-        htmlElement.addEventListener("keydown", function(e) {
-
-            if (global.isTemplateLoaded) {
-
-                e.stopPropagation();
-                // ESCAPE key pressed
-                if (e.keyCode == 27) {
-                    closeTextBubblesAndCancelOperations();
-                }
-            }
-        });
+        var keys = Object.keys(MODIFIER_KEYS);
+        for (var i=0, len = keys.length; i<len; ++i) {
+            if (e[MODIFIER_KEYS[keys[i]]]===true) return keys[i];
+        }
+        return "disable";
     }
 
     function handleSelection(e) {
@@ -945,6 +1130,7 @@
         // Enable closeTextBubblesAndCancelOperations() on window click
         global.ignoreCancellationClick = false;
 
+        // Get modifier key that was pressed to compare against hotkey settings
         global.modifierKeyPressedString = getModifierKeyFromEvent(e);
 
         // Either Dblclick or Mouseup
@@ -953,8 +1139,8 @@
         } 
 
         // Either 'Disable hotkey' was selected or one of the hotkeys
-        // has to have been pressed.
-        if ('none' !== global.config.activateAxonWhileHoldingDown && 
+        // has to have been pressed, otherwise return.
+        if ('disable' !== global.config.activateAxonWhileHoldingDown && 
             !wasHotkeyPressed(global.config.activateAxonWhileHoldingDown) &&
             !wasHotkeyPressed(global.config.secondWikipediaHotkey))
         {
@@ -980,12 +1166,12 @@
         if (selectedTextPosition===null) return;
 
         // If the same text is selected again and the template is still active
-        // then cancel.
-        if (global.selectedTextPosition!==null && selectedTextPosition.equals(global.selectedTextPosition)) {
-            if (global.isTemplateLoaded) {
-                closeTextBubblesAndCancelOperations();
-                return;
-            }
+        // then close bubbles.
+        if (global.selectedTextPosition!==null && 
+            global.isTemplateLoaded && 
+            selectedTextPosition.equals(global.selectedTextPosition)) 
+        {
+            closeTextBubblesAndCancelOperations();
         }
 
         // Will be switched off by mouseup listener calling this function
@@ -996,13 +1182,9 @@
         // keep the old selected text position.
         if (selectedTextPosition.isInsideAnAxonBubble) {
             selectedTextPosition = global.selectedTextPosition;
-            // Hide example text bubble
-            document.getElementById('axon-example-container').className = "displayNone";
         }
-        else {
-            // If present close the speech bubbles from previous selection
-            closeTextBubbles();
-        }
+        // If present close the speech bubbles from previous selection
+        closeTextBubbles();
 
         global.mustCancelOperations = false;
         global.selectedTextPosition = selectedTextPosition;
@@ -1029,11 +1211,28 @@
         getWordnikOrWikipediaEntry();
     }
 
+    var htmlElement = document.getElementsByTagName('html')[0];
+    if (typeof htmlElement!=="undefined") {
+        htmlElement.addEventListener("keydown", function(e) {
+
+            if (global.isTemplateLoaded) {
+
+                e.stopPropagation();
+                // ESCAPE key pressed
+                if (e.keyCode == 27) {
+                    closeTextBubblesAndCancelOperations();
+                }
+            }
+        });
+    }
+
     window.addEventListener("dblclick", function(e) {
+        if (isMouseClickInsideGoogleMap(e)) return;
         handleSelection(e);
     }, true);
 
     window.addEventListener("mouseup", function(e) {
+        if (isMouseClickInsideGoogleMap(e)) return;
         if (e.which!==1) return; // if not left mouse button
         if (global.mustIgnoreMouseUp){ // enables links inside speech bubble
             global.mustIgnoreMouseUp = false;
@@ -1043,6 +1242,7 @@
     }, true);
 
     window.addEventListener("click", function(e) {
+        if (isMouseClickInsideGoogleMap(e)) return;
         if (e.which===1 && 
             global.isTemplateLoaded && 
             !global.ignoreCancellationClick)

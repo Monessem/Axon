@@ -1,6 +1,12 @@
+20-feb-2015
+   Version 2.0
+        - Added Google Maps to open in the example bubble if the selected text
+          is a location.
+        - Improved error handling
+
 15-feb-2015
    Version 1.0
-        - Remove empty paragraphs from Wikipedia extracts (hatnote leftover?)
+        - Removed empty paragraphs from Wikipedia extracts (hatnote leftover?)
         - Removed selected text Range.surroundContents(). Replaced element based
           isInsideBubble check with comparison of coordinates.
 

@@ -13,15 +13,15 @@
         "type"       : "radio",
         "title"      : "Activate Axon when I",
         "description": "",
-        "value"      : "dblclick",
+        "value"      : "mouseup",
         "options": [
             {
                 "value": "dblclick",
-                "label": "Double-click a word"
+                "label": "double-click a word"
             },
             {
                 "value": "mouseup",
-                "label": "Double-click a word or select text"
+                "label": "double-click a word or select text"
             }
         ]
     },
@@ -30,7 +30,7 @@
         "type"       : "radio",
         "title"      : "while holding down",
         "description": "",
-        "value"      : "none",
+        "value"      : "disable",
         "options": [
             {
                 "value": "ctrl",
@@ -49,7 +49,7 @@
                 "label": "Cmd (OS X)"
             },
             {
-                "value": "none",
+                "value": "disable",
                 "label": "Disable hotkey"
             }
         ]
@@ -2417,10 +2417,6 @@
         "value"      : "disable",
         "options": [
             {
-                "value": "disable",
-                "label": "Disable"
-            },
-            {
                 "value": "ctrl",
                 "label": "Ctrl"
             },
@@ -2435,6 +2431,39 @@
             {
                 "value": "cmd",
                 "label": "Cmd (OS X)"
+            },
+            {
+                "value": "disable",
+                "label": "Disable"
+            }
+        ]
+    },
+    {
+        "name"       : "startGoogleMapsCondition",
+        "type"       : "menulist",
+        "title"      : "Show Google Maps when my selection matches",
+        "description": "Find the selected text on Google Maps",
+        "value"      : "countryCityNaturalFeature",
+        "options": [
+            {
+                "value": "countryNaturalFeature",
+                "label": "a country, state or natural feature"
+            },
+            {
+                "value": "countryCityNaturalFeature",
+                "label": "a country, state, city, community or natural feature"
+            },
+            {
+                "value": "countryCityNaturalFeaturePOI",
+                "label": "any large civil entity, natural feature or point of interest"
+            },
+            {
+                "value": "any",
+                "label": "any location, excluding buildings and routes"
+            },
+            {
+                "value": "disable",
+                "label": "disable Google Maps"
             }
         ]
     },
@@ -2453,11 +2482,35 @@
         "value"      : true
     },
     {
+        "name"       : "axonGoogleMapsInExampleBubbleZoomLevel",
+        "title"      : "Zoom level Google Map in the Example bubble",
+        "description": "Set the initial zoom level of the Google Map in Example bubble",
+        "type"       : "integer",
+        "value"      : 4,
+        "hidden"     : true
+    },
+    {
+        "name"       : "axonGoogleMapsOpenInNewTabZoomLevel",
+        "title"      : "Initial zoom level on maps.google.com",
+        "description": "Set the initial zoom level of Google Map in the link to maps.google.com",
+        "type"       : "integer",
+        "value"      : 5,
+        "hidden"     : true
+    },
+    {
+        "name"       : "axonIgnoreErrors",
+        "title"      : "Ignore API errors and timeouts",
+        "description": "Continue after and do not display API errors",
+        "type"       : "bool",
+        "value"      : false,
+        "hidden"     : true
+    },
+    {
         "name"       : "axonMaximumWaitTime",
         "title"      : "Maximum wait time",
         "description": "Maximum number of milliseconds to wait for a response",
         "type"       : "integer",
-        "value"      : "5000",
+        "value"      : 5000,
         "hidden"     : true
     }]
 }

@@ -3,14 +3,14 @@
                 // Remove line breaks
                 wikiText = wikiText.replace(/(\r\n|\n|\r)/gm,"");
 
-                // Find accolade tags
-                var allAccoladeTags = wikiText.replace(/.*?({{.*?}}).*?/gi, "$1;");
+                // Find double brace tags
+                var allBraceTags = wikiText.replace(/.*?({{.*?}}).*?/gi, "$1;");
 
                 // Remove ending (non replaced text)
-                allAccoladeTags = allAccoladeTags.replace(/({{.*}}).*$/,"$1");
+                allBraceTags = allBraceTags.replace(/({{.*}}).*$/,"$1");
 
                 // Find audio tags and keep only the filename part
-                var audioTags = allAccoladeTags.replace(/.*?{{audio[^|]*?\|([^|]*).*?}}.*?/gi,"$1;")
+                var audioTags = allBraceTags.replace(/.*?{{audio[^|]*?\|([^|]*).*?}}.*?/gi,"$1;")
 
                 // Remove ending (non replaced text)
                 audioTags = audioTags.replace(/(.*?){{.*}}.*$/,"$1");

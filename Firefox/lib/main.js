@@ -19,20 +19,22 @@
 
 "use strict";
 
-const Self        = require("sdk/self");
-const Buttons     = require("sdk/ui/button/action");
-const Tabs        = require("sdk/tabs");
-const SimplePrefs = require("sdk/simple-prefs");
-const NetXHR      = require("sdk/net/xhr");
-const {PageMod}   = require("sdk/page-mod");
-const {Cu}        = require('chrome');
-const {Services}  = Cu.import('resource://gre/modules/Services.jsm');
+const {PageMod}           = require("sdk/page-mod");
+const {Cu}                = require('chrome');
+const {Services}          = Cu.import('resource://gre/modules/Services.jsm');
+const Self                = require("sdk/self");
+const Buttons             = require("sdk/ui/button/action");
+const Tabs                = require("sdk/tabs");
+const SimplePrefs         = require("sdk/simple-prefs");
+const NetXHR              = require("sdk/net/xhr");
 
-const API_URL_WORDNIK    = "http://api.wordnik.com:80/v4/word.json/";
-const API_KEY_WORDNIK    = "a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5";
-const API_URL_WIKIMEDIA  = "https://commons.wikimedia.org/w/api.php?";
-const API_URL_WIKIPEDIA  = "https://{LANGUAGECODE}.wikipedia.org/w/api.php?";
-const API_URL_WIKTIONARY = "https://{LANGUAGECODE}.wiktionary.org/w/api.php?";
+const DEBUG               = false;
+const API_URL_WORDNIK     = "http://api.wordnik.com:80/v4/word.json/";
+const API_KEY_WORDNIK     = "a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5";
+const API_URL_WIKIMEDIA   = "https://commons.wikimedia.org/w/api.php?";
+const API_URL_WIKIPEDIA   = "https://{LANGUAGECODE}.wikipedia.org/w/api.php?";
+const API_URL_WIKTIONARY  = "https://{LANGUAGECODE}.wiktionary.org/w/api.php?";
+const API_URL_GOOGLE_MAPS = "https://maps.googleapis.com/maps/api/geocode/json?";
 
 var button = Buttons.ActionButton({
     id: "mozilla-link",
@@ -62,31 +64,50 @@ function getWikiURL(URL, wiktionaryLanguageCode, parameters) {
     return url;
 }
 
-function sendXHRrequest(worker, url, commonResourceName, getRequest) {
+function sendXHRrequest(worker, url, commonResourceName, onComplete) {
+
+    if (DEBUG) {
+        console.log(commonResourceName);
+        console.log(url);
+    }
 
     var xhr = new NetXHR.XMLHttpRequest();
+    var shouldIgnoreErrors = SimplePrefs.prefs.axonIgnoreErrors;
+
     xhr.timeout = SimplePrefs.prefs.axonMaximumWaitTime;
     xhr.overrideMimeType("text/plain; charset=x-user-defined");
 
     xhr.onload = function() {
         if (xhr.status===200) {
-            worker.port.emit(getRequest.onComplete, JSON.stringify(xhr.response));
+            worker.port.emit(onComplete, JSON.stringify(xhr.response));
         }
         else {
-            worker.port.emit("errorListener", JSON.stringify({
-                "error" : "Unhandled exception: "+commonResourceName+" API call "+
-                          "returned with HTTP status: "+xhr.status+" "+xhr.statusText+".",
-                "title" : "Axon v"+Self.version+" error"
-            }));
+            if (!shouldIgnoreErrors) {
+                worker.port.emit("errorListener", JSON.stringify({
+                    "title" : "Axon v"+Self.version+" error",
+                    "error" : "Unhandled exception: "+commonResourceName+" API call "+
+                              "returned with HTTP status: "+xhr.status+" "+xhr.statusText+"."+
+                              "<p style='margin-top:10px'>To ignore API errors set <i>axonIgnoreErrors</i> to <i>true</i> by typing <a href='http://kb.mozillazine.org/About:config'>about:config</a> in the address bar.</p>"
+                }));
+            }
+            else {
+                worker.port.emit(onComplete, "{}");
+            }
         }
     }
 
     xhr.ontimeout = function() {
-        worker.port.emit("errorListener", JSON.stringify({
-            "error" : "<p>Request for '"+commonResourceName+"' took longer than the maximum of "+(SimplePrefs.prefs.axonMaximumWaitTime/1000)+" seconds."+
-                      "</p><p style='margin-top:10px'>Please try again later, or increase preference <i>axonMaximumWaitTime</i> in <a href='http://kb.mozillazine.org/About:config'>about:config</a>.</p>",
-            "title" : "Axon v"+Self.version+" error"
-        }));
+        if (!shouldIgnoreErrors) {
+            worker.port.emit("errorListener", JSON.stringify({
+                "title" : "Axon v"+Self.version+" error",
+                "error" : "<p>Request for '"+commonResourceName+"' took longer than the maximum of "+(SimplePrefs.prefs.axonMaximumWaitTime/1000)+" seconds.</p>"+
+                          "<p style='margin-top:10px'>Please try again later, or increase preference <i>axonMaximumWaitTime</i> by typing <a href='http://kb.mozillazine.org/About:config'>about:config</a> in the address bar.</p>"+
+                          "<p style='margin-top:10px'>To ignore API errors set preference <i>axonIgnoreErrors</i> to <i>true</i>.</p>"
+            }));
+        }
+        else {
+            worker.port.emit(onComplete, "{}");
+        }
     }
 
     xhr.open("GET", url, true);
@@ -95,18 +116,43 @@ function sendXHRrequest(worker, url, commonResourceName, getRequest) {
 }
 
 function setConfiguration(worker) {
+
     var data = {
         htmlTemplate                 : Self.data.load("template.html"),
         htmlTemplateCss              : Self.data.load("template.css"),
-        activateAxonWhenI            : SimplePrefs.prefs.activateAxonWhenI,
-        activateAxonWhileHoldingDown : SimplePrefs.prefs.activateAxonWhileHoldingDown,
-        // Wikipedia language selection (see package.json; list source: http://meta.wikimedia.org/wiki/List_of_Wikipedias)
-        mainWikipediaLanguageCode    : SimplePrefs.prefs.mainWikipediaLanguageCode,
-        secondWikipediaLanguageCode  : SimplePrefs.prefs.secondWikipediaLanguageCode,
-        secondWikipediaHotkey        : SimplePrefs.prefs.secondWikipediaHotkey,
-        isWikipediaOnlyEnabled       : SimplePrefs.prefs.isWikipediaOnlyEnabled,
-        isRandomExampleEnabled       : SimplePrefs.prefs.isRandomExampleEnabled
+        htmlGmapJS                   : Self.data.load("gmap.js")
     };
+
+    // Load preferences (list of all Wikipedias: http://meta.wikimedia.org/wiki/List_of_Wikipedias).
+    Object.keys(SimplePrefs.prefs).forEach(function(preference) {
+        data[preference] = SimplePrefs.prefs[preference];
+    });
+
+    if (DEBUG) {
+
+        // Keys
+        data.activateAxonWhileHoldingDown           = "alt";
+        data.secondWikipediaHotkey                  = "ctrl";
+        data.activateAxonWhenI                      = "mouseup";
+
+        // Languages / Dictionaries
+        data.mainWikipediaLanguageCode              = "en";
+        data.secondWikipediaLanguageCode            = "nl";
+        data.wordnikDictionary                      = "all";
+
+        // Google Maps
+        //data.startGoogleMapsCondition               = "countryCityNaturalFeature";
+        //data.axonGoogleMapsInExampleBubbleZoomLevel = 4;
+        //data.axonGoogleMapsOpenInNewTabZoomLevel    = 5;
+
+        // Flags
+        //data.isWikipediaOnlyEnabled                 = false;
+        //data.axonIgnoreErrors                       = false;
+        //data.isRandomExampleEnabled                 = true;
+
+        // XHR timeout
+        //data.axonMaximumWaitTime                    = 5000;
+    }
 
     worker.port.emit("setConfiguration", data);
 }
@@ -175,7 +221,7 @@ PageMod({
                              "format=json",
                              "redirects=",
                              "continue=",
-                             "titles="+urlSearchString.toLowerCase()]);
+                             "titles="+urlSearchString]);
                     break;
 
                 case "wiktionaryAudioFileURL":
@@ -223,12 +269,17 @@ PageMod({
                              "srsearch="+urlSearchString]);
                     break;
 
+                case "googleMapsGeocode":
+                        commonResourceName = "Google maps";
+                        url = API_URL_GOOGLE_MAPS+"address="+urlSearchString;
+                    break;
+
                 default:
                     worker.port.emit("errorListener", getErrorAsJsonString("getRequest type "+getRequest.type+" not found."));
                     break;
             }
 
-            sendXHRrequest(worker, url, commonResourceName, getRequest);
+            sendXHRrequest(worker, url, commonResourceName, getRequest.onComplete);
 
         });
    }
